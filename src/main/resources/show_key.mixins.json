@@ -1,0 +1,13 @@
+{
+  "required": true,
+  "package": "com.aedbia.showKey.mixins",
+  "compatibilityLevel": "JAVA_17",
+  "refmap": "show_key.refmap.json",
+  "mixins": [
+  ],
+  "client": [
+    "AccessorBooleanValue",
+    "MixinOptionsScreen"
+  ],
+  "minVersion": "0.8"
+}
