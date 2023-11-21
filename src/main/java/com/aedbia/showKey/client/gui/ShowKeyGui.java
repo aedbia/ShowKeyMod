@@ -2,6 +2,7 @@ package com.aedbia.showKey.client.gui;
 
 import com.aedbia.showKey.ShowKey;
 import com.aedbia.showKey.ShowKeyConfig;
+import com.aedbia.showKey.compatible.KeybindsGaloreCompatible;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.KeyMapping;
@@ -42,11 +43,7 @@ public class ShowKeyGui implements IGuiOverlay {
     @Override
     public void render(ForgeGui gui, GuiGraphics guiGraphics, float partialTick, int screenWidth, int screenHeight) {
         if(reDraw){
-            keyMappings = Arrays.stream(mc.options.keyMappings).filter((a)->(!a.isUnbound()
-                    &&KeyInfoHelper.isShowKeyMapping(a)))
-                    .collect(Collectors.toMap(KeyMapping::getKey, Function.identity(),(a,b)->a));
-            keyMappingsNoModifier = keyMappings.values().stream().filter(a->a.getKeyModifier() == KeyModifier.NONE).sorted(Comparator.comparingInt(a->-a.getKey().getValue())).toList();
-            keyMappingsModifiers = keyMappings.values().stream().filter(a->a.getKeyModifier() != KeyModifier.NONE).sorted(Comparator.comparingInt(a->-a.getKey().getValue())).toList();
+            init();
             reDraw=false;
             LogUtils.getLogger().debug("reDrawShowKeyOverLay");
         }
@@ -119,6 +116,20 @@ public class ShowKeyGui implements IGuiOverlay {
         guiGraphics.drawCenteredString(mc.font, key, keyLoc, (int) y, color);
         guiGraphics.drawString(mc.font, keyName, keyNameLoc, (int) y, color);
 
+    }
+    private void init(){
+            keyMappings = Arrays.stream(mc.options.keyMappings).filter((a)->(!a.isUnbound()
+                            &&KeyInfoHelper.isShowKeyMapping(a)))
+                    .collect(Collectors.toMap(KeyMapping::getKey, Function.identity(),(a,b)->a));
+            if(!KeybindsGaloreCompatible.keybindsGaloreBoundKeyList.isEmpty()){
+                for (InputConstants.Key key: KeybindsGaloreCompatible.keybindsGaloreBoundKeyList.keySet()) {
+                    if (keyMappings.containsKey(key)) {
+                        keyMappings.put(key, KeybindsGaloreCompatible.keybindsGaloreBoundKeyList.get(key));
+                    }
+                }
+            }
+            keyMappingsNoModifier = keyMappings.values().stream().filter(a->a.getKeyModifier() == KeyModifier.NONE).sorted(Comparator.comparingInt(a->-a.getKey().getValue())).toList();
+            keyMappingsModifiers = keyMappings.values().stream().filter(a->a.getKeyModifier() != KeyModifier.NONE).sorted(Comparator.comparingInt(a->-a.getKey().getValue())).toList();
     }
     public String id() {
         return this.id;

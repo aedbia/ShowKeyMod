@@ -1,6 +1,7 @@
 package com.aedbia.showKey;
 
 import com.aedbia.showKey.client.gui.KeyInfoHelper;
+import com.aedbia.showKey.compatible.KeybindsGaloreCompatible;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.common.MinecraftForge;
 import net.minecraftforge.eventbus.api.IEventBus;
@@ -25,8 +26,8 @@ public class ShowKey
         MinecraftForge.EVENT_BUS.register(this);
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ShowKeyConfig.SPEC);
         modEventBus.register(new KeyInfoHelper());
+        MinecraftForge.EVENT_BUS.addListener(KeybindsGaloreCompatible::onClientTick);
     }
-
     /*
      * private void commonSetup(final FMLCommonSetupEvent event) {
      * }
