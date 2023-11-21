@@ -1,6 +1,5 @@
 package com.aedbia.showKey;
 
-import com.aedbia.showKey.client.gui.KeyInfoHelper;
 import com.aedbia.showKey.compatible.KeybindsGaloreCompatible;
 import com.mojang.logging.LogUtils;
 import net.minecraftforge.common.MinecraftForge;

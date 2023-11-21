@@ -1,11 +1,15 @@
-package com.aedbia.showKey.client.gui;
+package com.aedbia.showKey;
 
-import com.aedbia.showKey.ShowKeyConfig;
+import com.aedbia.showKey.client.gui.ShowKeyGui;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
+import net.minecraft.client.Minecraft;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
+
+import java.util.ArrayList;
+import java.util.List;
 
 public class KeyInfoHelper {
     @SuppressWarnings("NoTranslation")
@@ -35,6 +39,7 @@ public class KeyInfoHelper {
 
             };
 
+    public static List<String> KeyMappingNames = new ArrayList<>();
     public static boolean containKeys(KeyMapping keyMapping){
         for(InputConstants.Key key:keysToCheck){
             if(keyMapping.getKey().equals(key)){
@@ -51,6 +56,11 @@ public class KeyInfoHelper {
     }
 
     public static boolean isShowKeyMapping(KeyMapping keyMapping){
-        return ShowKeyConfig.hideKeyValue.containsKey(keyMapping)&&!ShowKeyConfig.hideKeyValue.get(keyMapping);
+        return !ShowKeyConfig.hideKeyValue.containsKey(keyMapping)||(ShowKeyConfig.hideKeyValue.containsKey(keyMapping)&&!ShowKeyConfig.hideKeyValue.get(keyMapping));
+    }
+    static {
+        for (KeyMapping keyMapping: Minecraft.getInstance().options.keyMappings){
+            KeyMappingNames.add(keyMapping.getName());
+        }
     }
 }

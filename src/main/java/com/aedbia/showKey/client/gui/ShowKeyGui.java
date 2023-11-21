@@ -1,5 +1,6 @@
 package com.aedbia.showKey.client.gui;
 
+import com.aedbia.showKey.KeyInfoHelper;
 import com.aedbia.showKey.ShowKey;
 import com.aedbia.showKey.ShowKeyConfig;
 import com.aedbia.showKey.compatible.KeybindsGaloreCompatible;
@@ -34,7 +35,7 @@ public class ShowKeyGui implements IGuiOverlay {
 
     public ShowKeyGui(){
         keyMappings = Arrays.stream(mc.options.keyMappings).filter((a)->(!a.isUnbound()
-                        &&KeyInfoHelper.isShowKeyMapping(a)))
+                        && KeyInfoHelper.isShowKeyMapping(a)))
                         .collect(Collectors.toMap(KeyMapping::getKey, Function.identity(),(a,b)->a));
         this.id = "keys";
     }
@@ -42,6 +43,7 @@ public class ShowKeyGui implements IGuiOverlay {
     @SuppressWarnings("unused")
     @Override
     public void render(ForgeGui gui, GuiGraphics guiGraphics, float partialTick, int screenWidth, int screenHeight) {
+        //if(partialTick>0.9)return;
         if(reDraw){
             init();
             reDraw=false;
