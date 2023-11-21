@@ -35,7 +35,6 @@ public class KeyInfoHelper {
 
             };
 
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public static boolean containKeys(KeyMapping keyMapping){
         for(InputConstants.Key key:keysToCheck){
             if(keyMapping.getKey().equals(key)){
@@ -47,7 +46,6 @@ public class KeyInfoHelper {
     @SubscribeEvent
     public void onRenderBar(RegisterGuiOverlaysEvent event)
     {
-
         ShowKeyGui gui = new ShowKeyGui();
         event.registerBelow(VanillaGuiOverlay.HOTBAR.id(), gui.id(), gui);
     }

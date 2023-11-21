@@ -2,6 +2,7 @@ package com.aedbia.showKey.client.gui;
 
 import com.aedbia.showKey.ShowKey;
 import com.aedbia.showKey.ShowKeyConfig;
+import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
@@ -12,18 +13,16 @@ import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 import net.minecraftforge.client.settings.KeyModifier;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
+import java.util.stream.Collectors;
 
 public class ShowKeyGui implements IGuiOverlay {
 
     @SuppressWarnings("FieldMayBeFinal")
-    private static List<KeyMapping> keyMappings = new ArrayList<>();
-
-    @SuppressWarnings("FieldMayBeFinal")
-    private static List<KeyMapping> keyMappingsModifier = new ArrayList<>();
+    private static Map<InputConstants.Key,KeyMapping> keyMappings = new HashMap<>();
+    private List<KeyMapping> keyMappingsNoModifier = new ArrayList<>();
+    private List<KeyMapping> keyMappingsModifiers = new ArrayList<>();
     private final Minecraft mc = Minecraft.getInstance();
     private final String id;
     private int activeKeyCount = 10;
@@ -33,6 +32,9 @@ public class ShowKeyGui implements IGuiOverlay {
     private static final ResourceLocation button_release = new ResourceLocation(ShowKey.MODID,"textures/gui/button_release.png");
 
     public ShowKeyGui(){
+        keyMappings = Arrays.stream(mc.options.keyMappings).filter((a)->(!a.isUnbound()
+                        &&KeyInfoHelper.isShowKeyMapping(a)))
+                        .collect(Collectors.toMap(KeyMapping::getKey, Function.identity(),(a,b)->a));
         this.id = "keys";
     }
 
@@ -41,13 +43,10 @@ public class ShowKeyGui implements IGuiOverlay {
     public void render(ForgeGui gui, GuiGraphics guiGraphics, float partialTick, int screenWidth, int screenHeight) {
         if(reDraw){
             keyMappings = Arrays.stream(mc.options.keyMappings).filter((a)->(!a.isUnbound()
-                    &&a.getKeyModifier()==KeyModifier.NONE
-                    &&KeyInfoHelper.isShowKeyMapping(a)
-            )).sorted(Comparator.comparingInt(a -> -a.getKey().getValue())).toList();
-            keyMappingsModifier = Arrays.stream(mc.options.keyMappings).filter((a)->(!a.isUnbound()
-                    &&a.getKeyModifier()!= KeyModifier.NONE
-                    &&KeyInfoHelper.isShowKeyMapping(a)
-            )).sorted(Comparator.comparingInt(a -> -a.getKey().getValue())).toList();
+                    &&KeyInfoHelper.isShowKeyMapping(a)))
+                    .collect(Collectors.toMap(KeyMapping::getKey, Function.identity(),(a,b)->a));
+            keyMappingsNoModifier = keyMappings.values().stream().filter(a->a.getKeyModifier() == KeyModifier.NONE).sorted(Comparator.comparingInt(a->-a.getKey().getValue())).toList();
+            keyMappingsModifiers = keyMappings.values().stream().filter(a->a.getKeyModifier() != KeyModifier.NONE).sorted(Comparator.comparingInt(a->-a.getKey().getValue())).toList();
             reDraw=false;
             LogUtils.getLogger().debug("reDrawShowKeyOverLay");
         }
@@ -64,7 +63,7 @@ public class ShowKeyGui implements IGuiOverlay {
         boolean NoModifierIsActive = true;
         boolean right = false;
         guiGraphics.pose().scale((float) scale, (float) scale, 1f);
-        for (KeyMapping keyMapping : keyMappingsModifier) {
+        for (KeyMapping keyMapping : keyMappingsModifiers) {
             boolean modifierIsDown = keyMapping.getKeyModifier().isActive(keyMapping.getKeyConflictContext());
             if(count>=2*showCount){
                 break;
@@ -82,7 +81,7 @@ public class ShowKeyGui implements IGuiOverlay {
             }
         }
         if(NoModifierIsActive){
-            for (KeyMapping keyMapping : keyMappings) {
+            for (KeyMapping keyMapping : keyMappingsNoModifier) {
                 if(count>=2*showCount){
 
                     break;
@@ -105,7 +104,6 @@ public class ShowKeyGui implements IGuiOverlay {
 
     }
 
-    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public void renderKeyInfo(GuiGraphics guiGraphics,KeyMapping keyMapping,double x, double y,double wight,double height,boolean right){
         String key = keyMapping.getKey().getDisplayName().getString().replaceFirst("key.keyboard.","");
         if(key.length()<=1){
