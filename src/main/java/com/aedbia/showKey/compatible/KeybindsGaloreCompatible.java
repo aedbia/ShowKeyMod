@@ -20,6 +20,7 @@ public class KeybindsGaloreCompatible {
 
     public static void onClientTick(TickEvent.ClientTickEvent event){
         if(event.phase == TickEvent.Phase.END) {
+            //LogUtils.getLogger().debug(Integer.toString(Thread.currentThread().getThreadGroup().activeCount()));
             String modID = ShowKey.MODID;
             List<InterModComms.IMCMessage> stream = InterModComms.getMessages(modID).toList();
             if (!stream.isEmpty()) {
