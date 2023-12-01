@@ -37,7 +37,7 @@ public class ShowKeyConfig {
         for(int x =0;x<50&&x<Minecraft.getInstance().options.keyMappings.length;x++) {
             KeyMapping keyMapping = Arrays.stream(Minecraft.getInstance().options.keyMappings).toList().get(x);
             String a = Component.translatable(keyMapping.getName()).getString();
-            final ForgeConfigSpec.BooleanValue booleanValue = builder.comment("'"+ a +"' can display?").define(keyMapping.getName(), KeyInfoHelper.containKeys(keyMapping));
+            final ForgeConfigSpec.BooleanValue booleanValue = builder.comment("Hide '"+ a +"'?").define(keyMapping.getName(), KeyInfoHelper.containKeys(keyMapping));
             hideKey.put(keyMapping,booleanValue);
         }
     }
