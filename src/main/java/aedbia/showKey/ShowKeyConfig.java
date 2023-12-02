@@ -3,25 +3,25 @@ package aedbia.showKey;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.Component;
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.event.config.ModConfigEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.event.config.ModConfigEvent;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 import java.util.*;
 
 @Mod.EventBusSubscriber(modid = ShowKey.MODID, bus = Mod.EventBusSubscriber.Bus.MOD)
 public class ShowKeyConfig {
-    private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
+    private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
 
-    private static final ForgeConfigSpec.DoubleValue UI_SCALE;
-    static final ForgeConfigSpec SPEC;
+    private static final ModConfigSpec.DoubleValue UI_SCALE;
+    static final ModConfigSpec SPEC;
     public static double UIScaleNumber;
     public static Map<KeyMapping, Boolean> hideKeyValue = new HashMap<>();
 
-    private static final Map<KeyMapping, ForgeConfigSpec.BooleanValue> hideKey = new HashMap<>();
+    private static final Map<KeyMapping, ModConfigSpec.BooleanValue> hideKey = new HashMap<>();
 
-    private static final ForgeConfigSpec.ConfigValue<List<String>> KEYMAPPING_BLACK_LIST;
+    private static final ModConfigSpec.ConfigValue<List<String>> KEYMAPPING_BLACK_LIST;
     public static List<String> keyMappingBlackList = new ArrayList<>();
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
@@ -33,11 +33,11 @@ public class ShowKeyConfig {
             }
         }
     }
-    ShowKeyConfig(ForgeConfigSpec.Builder builder){
+    ShowKeyConfig(ModConfigSpec.Builder builder){
         for(int x =0;x<50&&x<Minecraft.getInstance().options.keyMappings.length;x++) {
             KeyMapping keyMapping = Arrays.stream(Minecraft.getInstance().options.keyMappings).toList().get(x);
             String a = Component.translatable(keyMapping.getName()).getString();
-            final ForgeConfigSpec.BooleanValue booleanValue = builder.comment("Hide '"+ a +"'?").define(keyMapping.getName(), KeyInfoHelper.containKeys(keyMapping));
+            final ModConfigSpec.BooleanValue booleanValue = builder.comment("Hide '"+ a +"'?").define(keyMapping.getName(), KeyInfoHelper.containKeys(keyMapping));
             hideKey.put(keyMapping,booleanValue);
         }
     }

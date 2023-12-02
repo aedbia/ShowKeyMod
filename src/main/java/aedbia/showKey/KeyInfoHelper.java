@@ -1,6 +1,5 @@
 package aedbia.showKey;
 
-import aedbia.showKey.client.gui.ShowKeyGui;
 import aedbia.showKey.compatible.KeybindsGaloreCompatible;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
@@ -11,9 +10,6 @@ import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
 import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
 import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.gui.screens.social.SocialInteractionsScreen;
-import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -22,7 +18,6 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 public class KeyInfoHelper {
-    @SuppressWarnings("NoTranslation")
     private static final InputConstants.Key[] keysToCheck =
             {
 
@@ -94,14 +89,8 @@ public class KeyInfoHelper {
             return false;
         }
     }
-    @SubscribeEvent
-    public void onRenderBar(RegisterGuiOverlaysEvent event)
-    {
-        ShowKeyGui gui = new ShowKeyGui();
-        event.registerBelow(VanillaGuiOverlay.HOTBAR.id(), gui.id(), gui);
-    }
 
-    @SuppressWarnings({"NoTranslation", "unused", "CommentedOutCode"})
+    @SuppressWarnings({"unused", "CommentedOutCode"})
     public static List<InputConstants.Key> AddAllKeyNames(){
         List<InputConstants.Key> list = new ArrayList<>();
         list.add(InputConstants.getKey("key.keyboard.unknown"));

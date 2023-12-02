@@ -3,15 +3,16 @@ package aedbia.showKey.client.gui;
 import aedbia.showKey.ShowKey;
 import aedbia.showKey.ShowKeyConfig;
 import aedbia.showKey.KeyInfoHelper;
+import aedbia.showKey.compatible.KeybindsGaloreCompatible;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.client.gui.overlay.ForgeGui;
-import net.minecraftforge.client.gui.overlay.IGuiOverlay;
-import net.minecraftforge.client.settings.KeyModifier;
+import net.neoforged.neoforge.client.gui.overlay.ExtendedGui;
+import net.neoforged.neoforge.client.gui.overlay.IGuiOverlay;
+import net.neoforged.neoforge.client.settings.KeyModifier;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -42,7 +43,7 @@ public class ShowKeyGui implements IGuiOverlay {
     }
     @SuppressWarnings("unused")
     @Override
-    public void render(ForgeGui gui, GuiGraphics guiGraphics, float partialTick, int screenWidth, int screenHeight) {
+    public void render(ExtendedGui gui, GuiGraphics guiGraphics, float partialTick, int screenWidth, int screenHeight) {
         double scale = ShowKeyConfig.UIScaleNumber;
         if(scale <0.1){
             scale = 0.5;
@@ -117,6 +118,7 @@ public class ShowKeyGui implements IGuiOverlay {
         }
         if(reDraw){
             reDraw=false;
+            KeybindsGaloreCompatible.getKeybindsGaloreMessage();
             List<KeyMapping> list = Arrays.stream(mc.options.keyMappings).filter(KeyInfoHelper::isShowKeyMapping).collect(Collectors.toMap(KeyMapping::getKey, Function.identity(), (a, b) -> a)).values().stream().toList();
             modifierMappings = list.stream()
                     .filter(a->a.getKeyModifier() != KeyModifier.NONE).sorted(Comparator.comparingInt(a->-a.getKey().getValue())).toList();
@@ -124,6 +126,5 @@ public class ShowKeyGui implements IGuiOverlay {
             displayKeyMappings = list.stream()
                     .filter(a->a.getKeyModifier() == KeyModifier.NONE).sorted(Comparator.comparingInt(a->-a.getKey().getValue())).toList();
         }
-
     }
 }
