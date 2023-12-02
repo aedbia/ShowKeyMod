@@ -1,7 +1,7 @@
-package com.aedbia.showKey;
+package aedbia.showKey;
 
-import com.aedbia.showKey.client.ShowKeyCommandThread;
-import com.aedbia.showKey.compatible.KeybindsGaloreCompatible;
+import aedbia.showKey.client.ShowKeyCommandThread;
+import aedbia.showKey.compatible.KeybindsGaloreCompatible;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.logging.LogUtils;
 import net.minecraft.commands.CommandSourceStack;
@@ -36,7 +36,7 @@ public class ShowKey
         LiteralArgumentBuilder<CommandSourceStack> commands = Commands.literal(MODID).requires(a->a.hasPermission(2));
         event.getDispatcher()
                 .register(commands.then(Commands.literal("monitor")
-                        .then(Commands.literal("start").executes(a->{new ShowKeyCommandThread();return 1;}))));
+                        .then(Commands.literal("start").executes(a->{new ShowKeyCommandThread();ShowKeyCommandThread.stop = false;return 1;}))));
          event.getDispatcher()
                  .register(commands.then(Commands.literal("monitor")
                          .then(Commands.literal("stop").executes(a->{ShowKeyCommandThread.stop = true;return 1;}))));

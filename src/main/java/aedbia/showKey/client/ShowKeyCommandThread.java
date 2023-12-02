@@ -1,4 +1,4 @@
-package com.aedbia.showKey.client;
+package aedbia.showKey.client;
 
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.KeyMapping;

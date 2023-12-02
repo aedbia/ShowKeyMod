@@ -1,54 +1,48 @@
-package com.aedbia.showKey.client.gui;
+package aedbia.showKey.client.gui;
 
-import com.aedbia.showKey.KeyInfoHelper;
-import com.aedbia.showKey.ShowKey;
-import com.aedbia.showKey.ShowKeyConfig;
-import com.aedbia.showKey.compatible.KeybindsGaloreCompatible;
-import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.logging.LogUtils;
+import aedbia.showKey.ShowKey;
+import aedbia.showKey.ShowKeyConfig;
+import aedbia.showKey.KeyInfoHelper;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
 import net.minecraftforge.client.gui.overlay.IGuiOverlay;
 import net.minecraftforge.client.settings.KeyModifier;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Comparator;
+import java.util.List;
+import java.util.concurrent.ScheduledThreadPoolExecutor;
+import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 public class ShowKeyGui implements IGuiOverlay {
 
-    @SuppressWarnings("FieldMayBeFinal")
-    private static Map<InputConstants.Key,KeyMapping> keyMappings = new HashMap<>();
-    private List<KeyMapping> keyMappingsNoModifier = new ArrayList<>();
-    private List<KeyMapping> keyMappingsModifiers = new ArrayList<>();
+    private List<KeyMapping> displayKeyMappings = new ArrayList<>();
+
+    private List<KeyMapping> modifierMappings = new ArrayList<>();
     private final Minecraft mc = Minecraft.getInstance();
     private final String id;
     private int activeKeyCount = 10;
-
-    public static boolean reDraw =true;
+    public static boolean reDraw = true;
     private static final ResourceLocation button_down = new ResourceLocation(ShowKey.MODID,"textures/gui/button_down.png");
     private static final ResourceLocation button_release = new ResourceLocation(ShowKey.MODID,"textures/gui/button_release.png");
+    private static final ScheduledThreadPoolExecutor scheduled = new ScheduledThreadPoolExecutor(1);
+    private Screen now;
 
     public ShowKeyGui(){
-        keyMappings = Arrays.stream(mc.options.keyMappings).filter((a)->(!a.isUnbound()
-                        && KeyInfoHelper.isShowKeyMapping(a)))
-                        .collect(Collectors.toMap(KeyMapping::getKey, Function.identity(),(a,b)->a));
         this.id = "keys";
+        scheduled.scheduleAtFixedRate(this::tick,0,100, TimeUnit.MILLISECONDS);
     }
-
     @SuppressWarnings("unused")
     @Override
     public void render(ForgeGui gui, GuiGraphics guiGraphics, float partialTick, int screenWidth, int screenHeight) {
-        //if(partialTick>0.9)return;
-        if(reDraw){
-            init();
-            reDraw=false;
-            LogUtils.getLogger().debug("reDrawShowKeyOverLay");
-        }
         double scale = ShowKeyConfig.UIScaleNumber;
         if(scale <0.1){
             scale = 0.5;
@@ -59,11 +53,9 @@ public class ShowKeyGui implements IGuiOverlay {
         int count = 0;
         int showCount = (int) (7/ scale);
         double y = (screenHeight/ scale - height/showCount);
-        boolean NoModifierIsActive = true;
         boolean right = false;
         guiGraphics.pose().scale((float) scale, (float) scale, 1f);
-        for (KeyMapping keyMapping : keyMappingsModifiers) {
-            boolean modifierIsDown = keyMapping.getKeyModifier().isActive(keyMapping.getKeyConflictContext());
+        for (KeyMapping keyMapping:modifierMappings){
             if(count>=2*showCount){
                 break;
             }
@@ -72,35 +64,31 @@ public class ShowKeyGui implements IGuiOverlay {
                 y =(screenHeight/ scale - height/showCount);
                 right = true;
             }
-            if (modifierIsDown&&keyMapping.getKeyConflictContext().isActive()) {
-                renderKeyInfo(guiGraphics,keyMapping, x, y, wight, height/showCount, right);
+            if(keyMapping.getKeyConflictContext().isActive()&&keyMapping.getKeyModifier().isActive(keyMapping.getKeyConflictContext())) {
+                renderKeyInfo(guiGraphics, keyMapping, x, y, wight, height / showCount, right);
                 y -= (height / showCount);
-                NoModifierIsActive = false;
                 count++;
             }
         }
-        if(NoModifierIsActive){
-            for (KeyMapping keyMapping : keyMappingsNoModifier) {
+        if(count == 0){
+            for (KeyMapping keyMapping : displayKeyMappings) {
                 if(count>=2*showCount){
-
-                    break;
+                   break;
                 }
                 if(activeKeyCount/2 >= 1&&count==activeKeyCount/2){
                     x = screenWidth/ scale -wight;
                     y =(screenHeight/ scale - height/showCount);
-                    right = true;
+                   right = true;
                 }
                 if(keyMapping.getKeyConflictContext().isActive()) {
                     renderKeyInfo(guiGraphics, keyMapping, x, y, wight, height / showCount, right);
                     y -= (height / showCount);
                     count++;
                 }
-
             }
         }
         activeKeyCount = count;
         guiGraphics.pose().scale( (1/(float) scale),  (1/(float) scale), 1f);
-
     }
 
     public void renderKeyInfo(GuiGraphics guiGraphics,KeyMapping keyMapping,double x, double y,double wight,double height,boolean right){
@@ -119,21 +107,23 @@ public class ShowKeyGui implements IGuiOverlay {
         guiGraphics.drawString(mc.font, keyName, keyNameLoc, (int) y, color);
 
     }
-    private void init(){
-            keyMappings = Arrays.stream(mc.options.keyMappings).filter((a)->(!a.isUnbound()
-                            &&KeyInfoHelper.isShowKeyMapping(a)))
-                    .collect(Collectors.toMap(KeyMapping::getKey, Function.identity(),(a,b)->a));
-            if(!KeybindsGaloreCompatible.keybindsGaloreBoundKeyList.isEmpty()){
-                for (InputConstants.Key key: KeybindsGaloreCompatible.keybindsGaloreBoundKeyList.keySet()) {
-                    if (keyMappings.containsKey(key)) {
-                        keyMappings.put(key, KeybindsGaloreCompatible.keybindsGaloreBoundKeyList.get(key));
-                    }
-                }
-            }
-            keyMappingsNoModifier = keyMappings.values().stream().filter(a->a.getKeyModifier() == KeyModifier.NONE).sorted(Comparator.comparingInt(a->-a.getKey().getValue())).toList();
-            keyMappingsModifiers = keyMappings.values().stream().filter(a->a.getKeyModifier() != KeyModifier.NONE).sorted(Comparator.comparingInt(a->-a.getKey().getValue())).toList();
-    }
     public String id() {
         return this.id;
+    }
+    private void tick(){
+        if(now != mc.screen){
+            now = mc.screen;
+            reDraw = true;
+        }
+        if(reDraw){
+            reDraw=false;
+            List<KeyMapping> list = Arrays.stream(mc.options.keyMappings).filter(KeyInfoHelper::isShowKeyMapping).collect(Collectors.toMap(KeyMapping::getKey, Function.identity(), (a, b) -> a)).values().stream().toList();
+            modifierMappings = list.stream()
+                    .filter(a->a.getKeyModifier() != KeyModifier.NONE).sorted(Comparator.comparingInt(a->-a.getKey().getValue())).toList();
+
+            displayKeyMappings = list.stream()
+                    .filter(a->a.getKeyModifier() == KeyModifier.NONE).sorted(Comparator.comparingInt(a->-a.getKey().getValue())).toList();
+        }
+
     }
 }

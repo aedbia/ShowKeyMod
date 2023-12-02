@@ -1,15 +1,25 @@
-package com.aedbia.showKey;
+package aedbia.showKey;
 
-import com.aedbia.showKey.client.gui.ShowKeyGui;
+import aedbia.showKey.client.gui.ShowKeyGui;
+import aedbia.showKey.compatible.KeybindsGaloreCompatible;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.Options;
+import net.minecraft.client.gui.screens.ChatScreen;
+import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
+import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
+import net.minecraft.client.gui.screens.inventory.InventoryScreen;
+import net.minecraft.client.gui.screens.social.SocialInteractionsScreen;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
 import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.function.Predicate;
 
 public class KeyInfoHelper {
     @SuppressWarnings("NoTranslation")
@@ -39,14 +49,50 @@ public class KeyInfoHelper {
 
             };
 
-    public static List<String> KeyMappingNames = new ArrayList<>();
-    public static boolean containKeys(KeyMapping keyMapping){
+    @SuppressWarnings("FieldMayBeFinal")
+    private static Map<KeyMapping,Predicate<? super KeyMapping>> ALL_RULE = new HashMap<>();
+
+    static {
+        Minecraft mc = Minecraft.getInstance();
+        Options options = mc.options;
+        registerDisplayRule(options.keyChat,a->mc.screen == null||mc.screen.getClass()!= ChatScreen.class);
+        registerDisplayRule(options.keyCommand,a->mc.screen == null||mc.screen.getClass()!= ChatScreen.class);
+        registerDisplayRule(options.keyInventory,a->mc.screen == null||mc.screen.getClass() == CreativeModeInventoryScreen.class||mc.screen.getClass() == InventoryScreen.class);
+        registerDisplayRule(options.keyAdvancements,a->mc.screen == null||mc.screen.getClass() == AdvancementsScreen.class);
+        registerDisplayRule(options.keySocialInteractions,a->mc.screen == null||mc.screen.getClass() == SocialInteractionsScreen.class);
+        registerDisplayRule(options.keyJump,a->mc.screen == null||mc.screen.getClass()!= ChatScreen.class);
+        registerDisplayRule(options.keySprint,a->mc.screen == null||mc.screen.getClass()!= ChatScreen.class);
+        registerDisplayRule(options.keyShift,a->mc.screen == null||mc.screen.getClass()!= ChatScreen.class);
+
+    }
+    public static void registerDisplayRule(KeyMapping keyMapping, Predicate<? super KeyMapping> rule){
+        ALL_RULE.put(keyMapping,rule);
+    }
+    protected static boolean containKeys(KeyMapping keyMapping){
         for(InputConstants.Key key:keysToCheck){
             if(keyMapping.getKey().equals(key)){
                 return true;
             }
         }
         return false;
+    }
+
+    public static boolean isShowKeyMapping(KeyMapping keyMapping){
+        if(ShowKeyConfig.keyMappingBlackList.contains(keyMapping.getName())){
+            return false;
+        }else if(ShowKeyConfig.hideKeyValue.containsKey(keyMapping)&&ShowKeyConfig.hideKeyValue.get(keyMapping)){
+            return false;
+        }else if((!KeybindsGaloreCompatible.keybindsGaloreBoundKeyList.containsKey(keyMapping.getKey()))
+                ||KeybindsGaloreCompatible.keybindsGaloreBoundKeyList.get(keyMapping.getKey())==keyMapping){
+            if(ALL_RULE.containsKey(keyMapping)) {
+                return (!keyMapping.isUnbound())&&ALL_RULE.get(keyMapping).test(keyMapping);
+            }else{
+                return !keyMapping.isUnbound();
+            }
+        }else
+        {
+            return false;
+        }
     }
     @SubscribeEvent
     public void onRenderBar(RegisterGuiOverlaysEvent event)
@@ -55,20 +101,7 @@ public class KeyInfoHelper {
         event.registerBelow(VanillaGuiOverlay.HOTBAR.id(), gui.id(), gui);
     }
 
-    public static boolean isShowKeyMapping(KeyMapping keyMapping){
-        if(ShowKeyConfig.keyMappingBlackList.contains(keyMapping.getName())){
-            return false;
-        }else if(ShowKeyConfig.hideKeyValue.containsKey(keyMapping)){
-            return !ShowKeyConfig.hideKeyValue.get(keyMapping);
-        }
-        return true;
-    }
-    static {
-        for (KeyMapping keyMapping: Minecraft.getInstance().options.keyMappings){
-            KeyMappingNames.add(keyMapping.getName());
-        }
-    }
-    @SuppressWarnings({"NoTranslation", "unused"})
+    @SuppressWarnings({"NoTranslation", "unused", "CommentedOutCode"})
     public static List<InputConstants.Key> AddAllKeyNames(){
         List<InputConstants.Key> list = new ArrayList<>();
         list.add(InputConstants.getKey("key.keyboard.unknown"));

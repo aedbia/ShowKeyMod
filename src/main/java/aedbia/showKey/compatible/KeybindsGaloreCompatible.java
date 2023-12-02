@@ -1,8 +1,7 @@
-package com.aedbia.showKey.compatible;
+package aedbia.showKey.compatible;
 
 
-import com.aedbia.showKey.ShowKey;
-import com.aedbia.showKey.client.gui.ShowKeyGui;
+import aedbia.showKey.ShowKey;
 import com.mojang.blaze3d.platform.InputConstants;
 import com.mojang.logging.LogUtils;
 import net.minecraft.client.KeyMapping;
@@ -44,14 +43,8 @@ public class KeybindsGaloreCompatible {
                         }
                     }
                 }
-                if(!keybindsGaloreBoundKeyList.isEmpty()){
-                    ShowKeyGui.reDraw = true;
-                }
             }
         }
-        /*
-        }
-        */
     }
 
 }

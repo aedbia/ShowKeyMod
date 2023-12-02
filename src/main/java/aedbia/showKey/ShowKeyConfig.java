@@ -1,4 +1,4 @@
-package com.aedbia.showKey;
+package aedbia.showKey;
 
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
