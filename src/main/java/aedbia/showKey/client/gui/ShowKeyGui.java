@@ -3,6 +3,7 @@ package aedbia.showKey.client.gui;
 import aedbia.showKey.ShowKey;
 import aedbia.showKey.ShowKeyConfig;
 import aedbia.showKey.KeyInfoHelper;
+import aedbia.showKey.compatible.keybindsGalore.KeybindsGaloreCompatible;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -117,6 +118,7 @@ public class ShowKeyGui implements IGuiOverlay {
         }
         if(reDraw){
             reDraw=false;
+            KeybindsGaloreCompatible.receiveIMCMessage();
             List<KeyMapping> list = Arrays.stream(mc.options.keyMappings).filter(KeyInfoHelper::isShowKeyMapping).collect(Collectors.toMap(KeyMapping::getKey, Function.identity(), (a, b) -> a)).values().stream().toList();
             modifierMappings = list.stream()
                     .filter(a->a.getKeyModifier() != KeyModifier.NONE).sorted(Comparator.comparingInt(a->-a.getKey().getValue())).toList();
