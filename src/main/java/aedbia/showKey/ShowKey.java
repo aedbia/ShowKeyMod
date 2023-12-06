@@ -1,16 +1,19 @@
 package aedbia.showKey;
 
+import aedbia.showKey.API.ModPluginCollector;
 import aedbia.showKey.client.ShowKeyCommandThread;
 import aedbia.showKey.client.gui.ShowKeyGui;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
 import com.mojang.logging.LogUtils;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
+import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModLoadingContext;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import net.neoforged.neoforge.client.event.RegisterGuiOverlaysEvent;
 import net.neoforged.neoforge.client.gui.overlay.VanillaGuiOverlay;
@@ -45,5 +48,14 @@ public class ShowKey
     {
         ShowKeyGui gui = new ShowKeyGui();
         event.registerBelow(VanillaGuiOverlay.HOTBAR.id(), gui.id(), gui);
+    }
+    @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    public static class ClientModEvents
+    {
+        @SubscribeEvent
+        public static void onClientSetup(FMLClientSetupEvent event)
+        {
+            new ModPluginCollector();
+        }
     }
 }

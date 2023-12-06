@@ -15,7 +15,7 @@ import static aedbia.showKey.ShowKey.MODID;
 public class KeybindsGaloreCompatible {
 
     public static Map<InputConstants.Key, KeyMapping> keybindsGaloreBoundKeyList = new HashMap<>();
-    public static void getKeybindsGaloreMessage(){
+    public static void getIMCMessage(){
         String modID = MODID;
         String senderID="keybinds_galore";
         if (ModList.get().isLoaded(senderID)) {

@@ -29,7 +29,7 @@ public class ShowKeyGui implements IGuiOverlay {
 
     private List<KeyMapping> modifierMappings = new ArrayList<>();
     private final Minecraft mc = Minecraft.getInstance();
-    private final String id;
+    private final ResourceLocation id;
     private int activeKeyCount = 10;
     public static boolean reDraw = true;
     private static final ResourceLocation button_down = new ResourceLocation(ShowKey.MODID,"textures/gui/button_down.png");
@@ -38,7 +38,7 @@ public class ShowKeyGui implements IGuiOverlay {
     private Screen now;
 
     public ShowKeyGui(){
-        this.id = "keys";
+        this.id = new ResourceLocation(ShowKey.MODID, "key");
         scheduled.scheduleAtFixedRate(this::tick,0,100, TimeUnit.MILLISECONDS);
     }
     @SuppressWarnings("unused")
@@ -108,7 +108,7 @@ public class ShowKeyGui implements IGuiOverlay {
         guiGraphics.drawString(mc.font, keyName, keyNameLoc, (int) y, color);
 
     }
-    public String id() {
+    public ResourceLocation id() {
         return this.id;
     }
     private void tick(){
@@ -118,7 +118,7 @@ public class ShowKeyGui implements IGuiOverlay {
         }
         if(reDraw){
             reDraw=false;
-            KeybindsGaloreCompatible.getKeybindsGaloreMessage();
+            KeybindsGaloreCompatible.getIMCMessage();
             List<KeyMapping> list = Arrays.stream(mc.options.keyMappings).filter(KeyInfoHelper::isShowKeyMapping).collect(Collectors.toMap(KeyMapping::getKey, Function.identity(), (a, b) -> a)).values().stream().toList();
             modifierMappings = list.stream()
                     .filter(a->a.getKeyModifier() != KeyModifier.NONE).sorted(Comparator.comparingInt(a->-a.getKey().getValue())).toList();
