@@ -118,7 +118,7 @@ public class ShowKeyGui implements IGuiOverlay {
         }
         if(reDraw){
             reDraw=false;
-            KeybindsGaloreCompatible.getKeybindsGaloreMessage();
+            KeybindsGaloreCompatible.getIMCMessage();
             List<KeyMapping> list = Arrays.stream(mc.options.keyMappings).filter(KeyInfoHelper::isShowKeyMapping).collect(Collectors.toMap(KeyMapping::getKey, Function.identity(), (a, b) -> a)).values().stream().toList();
             modifierMappings = list.stream()
                     .filter(a->a.getKeyModifier() != KeyModifier.NONE).sorted(Comparator.comparingInt(a->-a.getKey().getValue())).toList();

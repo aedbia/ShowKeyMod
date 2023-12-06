@@ -3,13 +3,6 @@ package aedbia.showKey;
 import aedbia.showKey.compatible.KeybindsGaloreCompatible;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
-import net.minecraft.client.Minecraft;
-import net.minecraft.client.Options;
-import net.minecraft.client.gui.screens.ChatScreen;
-import net.minecraft.client.gui.screens.advancements.AdvancementsScreen;
-import net.minecraft.client.gui.screens.inventory.CreativeModeInventoryScreen;
-import net.minecraft.client.gui.screens.inventory.InventoryScreen;
-import net.minecraft.client.gui.screens.social.SocialInteractionsScreen;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -18,6 +11,7 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 public class KeyInfoHelper {
+    @SuppressWarnings("NoTranslation")
     private static final InputConstants.Key[] keysToCheck =
             {
 
@@ -46,20 +40,6 @@ public class KeyInfoHelper {
 
     @SuppressWarnings("FieldMayBeFinal")
     private static Map<KeyMapping,Predicate<? super KeyMapping>> ALL_RULE = new HashMap<>();
-
-    static {
-        Minecraft mc = Minecraft.getInstance();
-        Options options = mc.options;
-        registerDisplayRule(options.keyChat,a->mc.screen == null||mc.screen.getClass()!= ChatScreen.class);
-        registerDisplayRule(options.keyCommand,a->mc.screen == null||mc.screen.getClass()!= ChatScreen.class);
-        registerDisplayRule(options.keyInventory,a->mc.screen == null||mc.screen.getClass() == CreativeModeInventoryScreen.class||mc.screen.getClass() == InventoryScreen.class);
-        registerDisplayRule(options.keyAdvancements,a->mc.screen == null||mc.screen.getClass() == AdvancementsScreen.class);
-        registerDisplayRule(options.keySocialInteractions,a->mc.screen == null||mc.screen.getClass() == SocialInteractionsScreen.class);
-        registerDisplayRule(options.keyJump,a->mc.screen == null||mc.screen.getClass()!= ChatScreen.class);
-        registerDisplayRule(options.keySprint,a->mc.screen == null||mc.screen.getClass()!= ChatScreen.class);
-        registerDisplayRule(options.keyShift,a->mc.screen == null||mc.screen.getClass()!= ChatScreen.class);
-
-    }
     public static void registerDisplayRule(KeyMapping keyMapping, Predicate<? super KeyMapping> rule){
         ALL_RULE.put(keyMapping,rule);
     }
@@ -90,7 +70,7 @@ public class KeyInfoHelper {
         }
     }
 
-    @SuppressWarnings({"unused", "CommentedOutCode"})
+    @SuppressWarnings({"unused", "CommentedOutCode", "NoTranslation"})
     public static List<InputConstants.Key> AddAllKeyNames(){
         List<InputConstants.Key> list = new ArrayList<>();
         list.add(InputConstants.getKey("key.keyboard.unknown"));
