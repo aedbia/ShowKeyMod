@@ -4,9 +4,8 @@ import aedbia.showKey.client.gui.ShowKeyGui;
 import aedbia.showKey.compatible.keybindsGalore.KeybindsGaloreCompatible;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
-import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.minecraftforge.client.gui.IIngameOverlay;
+import net.minecraftforge.client.gui.OverlayRegistry;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -15,6 +14,9 @@ import java.util.Map;
 import java.util.function.Predicate;
 
 public class KeyInfoHelper {
+    public static final IIngameOverlay SHOW_KEY;
+    @SuppressWarnings("FieldMayBeFinal")
+    private static Map<KeyMapping,Predicate<? super KeyMapping>> ALL_RULE = new HashMap<>();
     @SuppressWarnings("NoTranslation")
     private static final InputConstants.Key[] keysToCheck =
             {
@@ -42,8 +44,10 @@ public class KeyInfoHelper {
 
             };
 
+    static {
+        SHOW_KEY = OverlayRegistry.registerOverlayTop("ShowKey",new ShowKeyGui());
+    }
     @SuppressWarnings("FieldMayBeFinal")
-    private static Map<KeyMapping,Predicate<? super KeyMapping>> ALL_RULE = new HashMap<>();
     public static void registerDisplayRule(KeyMapping keyMapping, Predicate<? super KeyMapping> rule){
         ALL_RULE.put(keyMapping,rule);
     }
@@ -72,12 +76,6 @@ public class KeyInfoHelper {
         {
             return false;
         }
-    }
-    @SubscribeEvent
-    public void onRenderBar(RegisterGuiOverlaysEvent event)
-    {
-        ShowKeyGui gui = new ShowKeyGui();
-        event.registerBelow(VanillaGuiOverlay.HOTBAR.id(), gui.id(), gui);
     }
 
     @SuppressWarnings({"NoTranslation", "unused", "CommentedOutCode"})

@@ -9,13 +9,11 @@ import net.minecraft.commands.Commands;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import org.slf4j.Logger;
 
 @Mod(ShowKey.MODID)
@@ -27,11 +25,9 @@ public class ShowKey
 
     public ShowKey()
     {
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
         MinecraftForge.EVENT_BUS.addListener(this::onRegisterClientCommands);
         MinecraftForge.EVENT_BUS.register(this);
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ShowKeyConfig.SPEC);
-        modEventBus.register(new KeyInfoHelper());
     }
      public void onRegisterClientCommands(RegisterClientCommandsEvent event) {
         LiteralArgumentBuilder<CommandSourceStack> commands = Commands.literal(MODID).requires(a->a.hasPermission(2));

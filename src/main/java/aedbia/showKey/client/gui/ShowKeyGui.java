@@ -1,17 +1,19 @@
 package aedbia.showKey.client.gui;
 
+import aedbia.showKey.KeyInfoHelper;
 import aedbia.showKey.ShowKey;
 import aedbia.showKey.ShowKeyConfig;
-import aedbia.showKey.KeyInfoHelper;
 import aedbia.showKey.compatible.keybindsGalore.KeybindsGaloreCompatible;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiComponent;
 import net.minecraft.client.gui.screens.Screen;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.client.gui.overlay.ForgeGui;
-import net.minecraftforge.client.gui.overlay.IGuiOverlay;
+import net.minecraftforge.client.gui.ForgeIngameGui;
+import net.minecraftforge.client.gui.IIngameOverlay;
 import net.minecraftforge.client.settings.KeyModifier;
 
 import java.util.ArrayList;
@@ -23,7 +25,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-public class ShowKeyGui implements IGuiOverlay {
+public class ShowKeyGui implements IIngameOverlay {
 
     private List<KeyMapping> displayKeyMappings = new ArrayList<>();
 
@@ -43,7 +45,8 @@ public class ShowKeyGui implements IGuiOverlay {
     }
     @SuppressWarnings("unused")
     @Override
-    public void render(ForgeGui gui, GuiGraphics guiGraphics, float partialTick, int screenWidth, int screenHeight) {
+    public void render(ForgeIngameGui gui, PoseStack poseStack, float partialTick, int screenWidth, int screenHeight) {
+        //LogUtils.getLogger().debug("1111adada");
         double scale = ShowKeyConfig.UIScaleNumber;
         if(scale <0.1){
             scale = 0.5;
@@ -55,7 +58,7 @@ public class ShowKeyGui implements IGuiOverlay {
         int showCount = (int) (7/ scale);
         double y = (screenHeight/ scale - height/showCount);
         boolean right = false;
-        guiGraphics.pose().scale((float) scale, (float) scale, 1f);
+        poseStack.scale((float) scale, (float) scale, 1f);
         for (KeyMapping keyMapping:modifierMappings){
             if(count>=2*showCount){
                 break;
@@ -66,7 +69,7 @@ public class ShowKeyGui implements IGuiOverlay {
                 right = true;
             }
             if(keyMapping.getKeyConflictContext().isActive()&&keyMapping.getKeyModifier().isActive(keyMapping.getKeyConflictContext())) {
-                renderKeyInfo(guiGraphics, keyMapping, x, y, wight, height / showCount, right);
+                renderKeyInfo(poseStack, keyMapping, x, y, wight, height / showCount, right);
                 y -= (height / showCount);
                 count++;
             }
@@ -82,34 +85,33 @@ public class ShowKeyGui implements IGuiOverlay {
                    right = true;
                 }
                 if(keyMapping.getKeyConflictContext().isActive()) {
-                    renderKeyInfo(guiGraphics, keyMapping, x, y, wight, height / showCount, right);
+                    renderKeyInfo(poseStack, keyMapping, x, y, wight, height / showCount, right);
                     y -= (height / showCount);
                     count++;
                 }
             }
         }
         activeKeyCount = count;
-        guiGraphics.pose().scale( (1/(float) scale),  (1/(float) scale), 1f);
+        poseStack.scale( (1/(float) scale),  (1/(float) scale), 1f);
     }
 
-    public void renderKeyInfo(GuiGraphics guiGraphics,KeyMapping keyMapping,double x, double y,double wight,double height,boolean right){
+    public void renderKeyInfo(PoseStack poseStack,KeyMapping keyMapping,double x, double y,double wight,double height,boolean right){
         String key = keyMapping.getKey().getDisplayName().getString().replaceFirst("key.keyboard.","");
         if(key.length()<=1){
             key = key.toUpperCase();
         }
         boolean isKeyDown = keyMapping.isDown();
         int color = isKeyDown?0x808080:0xFFFFFF;
-        String keyName = Component.translatable(keyMapping.getName()).getString();
+        String keyName = new TranslatableComponent(keyMapping.getName()).getString();
         int keyLoc = (int) (right?(x+wight*3/4):(x+wight/4));
         int texLoc = (int) (right?(x+wight/2):x);
         int keyNameLoc = (int)(right?(x-mc.font.width(keyName)+wight/2):(x+wight/2));
-        guiGraphics.blit(isKeyDown?button_down:button_release,texLoc,(int) y,0,0,(int)(wight/2)-2,(int)height-2,(int)(wight/2)-2,(int)height-2);
-        guiGraphics.drawCenteredString(mc.font, key, keyLoc, (int) y, color);
-        guiGraphics.drawString(mc.font, keyName, keyNameLoc, (int) y, color);
+        ResourceLocation resourceLocation = isKeyDown ? button_down : button_release;
+        RenderSystem.setShaderTexture(0,resourceLocation);
+        GuiComponent.blit(poseStack,texLoc,(int) y,0,0,(int)(wight/2)-2,(int)height-2,(int)(wight/2)-2,(int)height-2);
+        GuiComponent.drawCenteredString(poseStack,mc.font, key, keyLoc, (int) y, color);
+        GuiComponent.drawString(poseStack,mc.font, keyName, keyNameLoc, (int) y, color);
 
-    }
-    public String id() {
-        return this.id;
     }
     private void tick(){
         if(now != mc.screen){

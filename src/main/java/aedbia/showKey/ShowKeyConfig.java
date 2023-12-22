@@ -2,7 +2,7 @@ package aedbia.showKey;
 
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
@@ -36,7 +36,7 @@ public class ShowKeyConfig {
     ShowKeyConfig(ForgeConfigSpec.Builder builder){
         for(int x =0;x<50&&x<Minecraft.getInstance().options.keyMappings.length;x++) {
             KeyMapping keyMapping = Arrays.stream(Minecraft.getInstance().options.keyMappings).toList().get(x);
-            String a = Component.translatable(keyMapping.getName()).getString();
+            String a = new TranslatableComponent(keyMapping.getName()).getString();
             final ForgeConfigSpec.BooleanValue booleanValue = builder.comment("Hide '"+ a +"'?").define(keyMapping.getName(), KeyInfoHelper.containKeys(keyMapping));
             hideKey.put(keyMapping,booleanValue);
         }

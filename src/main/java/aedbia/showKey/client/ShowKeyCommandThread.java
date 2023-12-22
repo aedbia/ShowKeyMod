@@ -4,7 +4,6 @@ import com.mojang.logging.LogUtils;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.network.chat.*;
-import net.minecraft.network.chat.contents.LiteralContents;
 import net.minecraft.util.FormattedCharSequence;
 import org.slf4j.Logger;
 
@@ -35,17 +34,27 @@ public class ShowKeyCommandThread extends Thread{
                             public Style getStyle() {
                                 return Style.EMPTY.withUnderlined(true)
                                         .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD,this.getString()))
-                                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,Component.translatable("tips.show_key.click_to_copy")));
+                                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,new TranslatableComponent("tips.show_key.click_to_copy")));
                             }
 
                             @Override
-                            public ComponentContents getContents() {
-                                return new LiteralContents(keyMapping.getName());
+                            public String getContents() {
+                                return keyMapping.getName();
                             }
 
                             @Override
                             public List<Component> getSiblings() {
                                 return new ArrayList<>();
+                            }
+
+                            @Override
+                            public MutableComponent plainCopy() {
+                                return null;
+                            }
+
+                            @Override
+                            public MutableComponent copy() {
+                                return null;
                             }
 
                             @Override
