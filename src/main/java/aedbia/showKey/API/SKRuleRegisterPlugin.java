@@ -1,6 +1,6 @@
 package aedbia.showKey.API;
 
-public interface RuleRegisterPlugin {
+public interface SKRuleRegisterPlugin {
     default void registerRule() {
 
     }

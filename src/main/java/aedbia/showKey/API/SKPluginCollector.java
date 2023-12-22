@@ -8,8 +8,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.Collection;
 import java.util.List;
 
-public class ModPluginCollector {
-    public ModPluginCollector(){
+public class SKPluginCollector {
+    public SKPluginCollector(){
         runAllPlugin();
     }
     private void runAllPlugin(){
@@ -22,8 +22,8 @@ public class ModPluginCollector {
         for (String id:pluginName){
             try {
                 Class<?> plugin = Class.forName(id);
-                if(RuleRegisterPlugin.class.isAssignableFrom(plugin)){
-                    ((RuleRegisterPlugin)(plugin.getDeclaredConstructor().newInstance())).registerRule();
+                if(SKRuleRegisterPlugin.class.isAssignableFrom(plugin)){
+                    ((SKRuleRegisterPlugin)(plugin.getDeclaredConstructor().newInstance())).registerRule();
 
                 }
             } catch (ClassNotFoundException | InvocationTargetException | InstantiationException |

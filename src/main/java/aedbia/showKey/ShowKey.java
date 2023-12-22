@@ -1,6 +1,6 @@
 package aedbia.showKey;
 
-import aedbia.showKey.API.ModPluginCollector;
+import aedbia.showKey.API.SKPluginCollector;
 import aedbia.showKey.client.ShowKeyCommandThread;
 import aedbia.showKey.client.gui.ShowKeyGui;
 import com.mojang.brigadier.builder.LiteralArgumentBuilder;
@@ -55,7 +55,7 @@ public class ShowKey
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event)
         {
-            new ModPluginCollector();
+            new SKPluginCollector();
         }
     }
 }

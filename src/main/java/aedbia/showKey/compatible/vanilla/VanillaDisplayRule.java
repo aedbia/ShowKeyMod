@@ -1,6 +1,6 @@
 package aedbia.showKey.compatible.vanilla;
 
-import aedbia.showKey.API.RuleRegisterPlugin;
+import aedbia.showKey.API.SKRuleRegisterPlugin;
 import aedbia.showKey.API.ShowKeyPlugin;
 import aedbia.showKey.KeyInfoHelper;
 import aedbia.showKey.ShowKey;
@@ -13,7 +13,7 @@ import net.minecraft.client.gui.screens.inventory.InventoryScreen;
 import net.minecraft.client.gui.screens.social.SocialInteractionsScreen;
 
 @ShowKeyPlugin(ShowKey.MODID)
-public class VanillaDisplayRule implements RuleRegisterPlugin {
+public class VanillaDisplayRule implements SKRuleRegisterPlugin {
 
     @Override
     public void registerRule() {
