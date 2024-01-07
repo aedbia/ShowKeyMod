@@ -12,7 +12,6 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.function.Predicate;
 
 public class KeyInfoHelper {
     @SuppressWarnings("NoTranslation")
@@ -42,12 +41,7 @@ public class KeyInfoHelper {
 
             };
 
-    @SuppressWarnings("FieldMayBeFinal")
-    private static Map<KeyMapping, Predicate<? super KeyMapping>> ALL_RULE = new HashMap<>();
-
-    public static void registerDisplayRule(KeyMapping keyMapping, Predicate<? super KeyMapping> rule) {
-        ALL_RULE.put(keyMapping, rule);
-    }
+    public static Map<String, Boolean> KEY_WORK = new HashMap<>();
 
     protected static boolean containKeys(KeyMapping keyMapping) {
         for (InputConstants.Key key : keysToCheck) {
@@ -64,12 +58,17 @@ public class KeyInfoHelper {
                 return false;
             } else if (ShowKeyConfig.hideKeyValue.containsKey(keyMapping) && ShowKeyConfig.hideKeyValue.get(keyMapping)) {
                 return false;
-            } else if ((!KeybindsGaloreCompatible.keybindsGaloreBoundKeyList.containsKey(keyMapping.getKey()))
-                    || KeybindsGaloreCompatible.keybindsGaloreBoundKeyList.get(keyMapping.getKey()) == keyMapping) {
-                if (ALL_RULE.containsKey(keyMapping)) {
-                    return (!keyMapping.isUnbound()) && ALL_RULE.get(keyMapping).test(keyMapping);
+            } else if (((!KeybindsGaloreCompatible.keybindsGaloreBoundKeyList.containsKey(keyMapping.getKey()))
+                    || KeybindsGaloreCompatible.keybindsGaloreBoundKeyList.get(keyMapping.getKey()) == keyMapping) && (!keyMapping.isUnbound())) {
+
+                if (!KEY_WORK.containsKey(keyMapping.getName())) {
+                    KEY_WORK.put(keyMapping.getName(), false);
+                }
+                if (KEY_WORK.get(keyMapping.getName())) {
+                    KEY_WORK.put(keyMapping.getName(), false);
+                    return true;
                 } else {
-                    return !keyMapping.isUnbound();
+                    return false;
                 }
             } else {
                 return false;
