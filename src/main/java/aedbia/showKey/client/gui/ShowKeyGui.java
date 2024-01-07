@@ -3,7 +3,7 @@ package aedbia.showKey.client.gui;
 import aedbia.showKey.KeyInfoHelper;
 import aedbia.showKey.ShowKey;
 import aedbia.showKey.ShowKeyConfig;
-import aedbia.showKey.mixins.keybindsGalore.KeybindsGaloreCompatible;
+import aedbia.showKey.compatible.keybindsGalore.KeybindsGaloreCompatible;
 import aedbia.showKey.mixins.SKMixins;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;

@@ -1,7 +1,7 @@
 package aedbia.showKey;
 
 import aedbia.showKey.client.gui.ShowKeyGui;
-import aedbia.showKey.mixins.keybindsGalore.KeybindsGaloreCompatible;
+import aedbia.showKey.compatible.keybindsGalore.KeybindsGaloreCompatible;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
 import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;

@@ -1,4 +1,4 @@
-package aedbia.showKey.mixins.keybindsGalore;
+package aedbia.showKey.compatible.keybindsGalore;
 
 
 import aedbia.showKey.ShowKey;
