@@ -10,7 +10,6 @@ import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiComponent;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.gui.ForgeIngameGui;
@@ -31,14 +30,11 @@ public class ShowKeyGui implements IIngameOverlay {
     private static final ResourceLocation button_down = new ResourceLocation(ShowKey.MODID, "textures/gui/button_down.png");
     private static final ResourceLocation button_release = new ResourceLocation(ShowKey.MODID, "textures/gui/button_release.png");
     private static final ScheduledThreadPoolExecutor scheduled = new ScheduledThreadPoolExecutor(1);
-    public static boolean reDraw = true;
     private final Minecraft mc = Minecraft.getInstance();
     private final String id;
-    private int tickInt = 0;
     private List<KeyMapping> displayKeyMappings = new ArrayList<>();
     private List<KeyMapping> modifierMappings = new ArrayList<>();
     private int activeKeyCount = 10;
-    private Screen now;
 
     public ShowKeyGui() {
         this.id = "keys";
@@ -117,17 +113,6 @@ public class ShowKeyGui implements IIngameOverlay {
     }
 
     private void tick() {
-        if (now != mc.screen) {
-            now = mc.screen;
-            reDraw = true;
-        }
-        tickInt++;
-        if (tickInt > 1) {
-            tickInt = 0;
-            reDraw = true;
-        }
-        if (reDraw) {
-            reDraw = false;
             KeybindsGaloreCompatible.receiveIMCMessage();
             List<KeyMapping> list = Arrays.stream(mc.options.keyMappings).filter(KeyInfoHelper::isShowKeyMapping).collect(Collectors.toMap(KeyMapping::getKey, Function.identity(), (a, b) -> a)).values().stream().toList();
             modifierMappings = list.stream()
@@ -135,7 +120,5 @@ public class ShowKeyGui implements IIngameOverlay {
 
             displayKeyMappings = list.stream()
                     .filter(a -> a.getKeyModifier() == KeyModifier.NONE).sorted(Comparator.comparingInt(a -> -a.getKey().getValue())).toList();
-        }
-
     }
 }
