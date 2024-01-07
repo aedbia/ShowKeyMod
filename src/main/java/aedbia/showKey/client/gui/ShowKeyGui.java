@@ -4,10 +4,10 @@ import aedbia.showKey.KeyInfoHelper;
 import aedbia.showKey.ShowKey;
 import aedbia.showKey.ShowKeyConfig;
 import aedbia.showKey.compatible.keybindsGalore.KeybindsGaloreCompatible;
+import aedbia.showKey.mixins.SKMixins;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.client.gui.overlay.ForgeGui;
@@ -95,7 +95,7 @@ public class ShowKeyGui implements IGuiOverlay {
         if (key.length() <= 1) {
             key = key.toUpperCase();
         }
-        boolean isKeyDown = keyMapping.isDown();
+        boolean isKeyDown = ((SKMixins.AccessorKeyMapping)keyMapping).getIsDown();
         int color = isKeyDown ? 0x808080 : 0xFFFFFF;
         String keyName = Component.translatable(keyMapping.getName()).getString();
         int keyLoc = (int) (right ? (x + wight * 3 / 4) : (x + wight / 4));
