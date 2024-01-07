@@ -43,45 +43,44 @@ public class KeyInfoHelper {
             };
 
     @SuppressWarnings("FieldMayBeFinal")
-    private static Map<KeyMapping,Predicate<? super KeyMapping>> ALL_RULE = new HashMap<>();
-    public static void registerDisplayRule(KeyMapping keyMapping, Predicate<? super KeyMapping> rule){
-        ALL_RULE.put(keyMapping,rule);
+    private static Map<KeyMapping, Predicate<? super KeyMapping>> ALL_RULE = new HashMap<>();
+
+    public static void registerDisplayRule(KeyMapping keyMapping, Predicate<? super KeyMapping> rule) {
+        ALL_RULE.put(keyMapping, rule);
     }
-    protected static boolean containKeys(KeyMapping keyMapping){
-        for(InputConstants.Key key:keysToCheck){
-            if(keyMapping.getKey().equals(key)){
+
+    protected static boolean containKeys(KeyMapping keyMapping) {
+        for (InputConstants.Key key : keysToCheck) {
+            if (keyMapping.getKey().equals(key)) {
                 return true;
             }
         }
         return false;
     }
 
-    public static boolean isShowKeyMapping(KeyMapping keyMapping){
-        if(ShowKeyConfig.keyMappingBlackList.contains(keyMapping.getName())){
-            return false;
-        }else if(ShowKeyConfig.hideKeyValue.containsKey(keyMapping)&&ShowKeyConfig.hideKeyValue.get(keyMapping)){
-            return false;
-        }else if((!KeybindsGaloreCompatible.keybindsGaloreBoundKeyList.containsKey(keyMapping.getKey()))
-                ||KeybindsGaloreCompatible.keybindsGaloreBoundKeyList.get(keyMapping.getKey())==keyMapping){
-            if(ALL_RULE.containsKey(keyMapping)) {
-                return (!keyMapping.isUnbound())&&ALL_RULE.get(keyMapping).test(keyMapping);
-            }else{
-                return !keyMapping.isUnbound();
+    public static boolean isShowKeyMapping(KeyMapping keyMapping) {
+        if (ShowKeyConfig.keyMappingWhiteList.isEmpty() || ShowKeyConfig.keyMappingWhiteList.contains(keyMapping.getName())) {
+            if (ShowKeyConfig.keyMappingBlackList.contains(keyMapping.getName())) {
+                return false;
+            } else if (ShowKeyConfig.hideKeyValue.containsKey(keyMapping) && ShowKeyConfig.hideKeyValue.get(keyMapping)) {
+                return false;
+            } else if ((!KeybindsGaloreCompatible.keybindsGaloreBoundKeyList.containsKey(keyMapping.getKey()))
+                    || KeybindsGaloreCompatible.keybindsGaloreBoundKeyList.get(keyMapping.getKey()) == keyMapping) {
+                if (ALL_RULE.containsKey(keyMapping)) {
+                    return (!keyMapping.isUnbound()) && ALL_RULE.get(keyMapping).test(keyMapping);
+                } else {
+                    return !keyMapping.isUnbound();
+                }
+            } else {
+                return false;
             }
-        }else
-        {
+        } else {
             return false;
         }
     }
-    @SubscribeEvent
-    public void onRenderBar(RegisterGuiOverlaysEvent event)
-    {
-        ShowKeyGui gui = new ShowKeyGui();
-        event.registerBelow(VanillaGuiOverlay.HOTBAR.id(), gui.id(), gui);
-    }
 
     @SuppressWarnings({"NoTranslation", "unused", "CommentedOutCode"})
-    public static List<InputConstants.Key> AddAllKeyNames(){
+    public static List<InputConstants.Key> AddAllKeyNames() {
         List<InputConstants.Key> list = new ArrayList<>();
         list.add(InputConstants.getKey("key.keyboard.unknown"));
         list.add(InputConstants.getKey("key.mouse.left"));
@@ -213,5 +212,11 @@ public class KeyInfoHelper {
         //list.add(InputConstants.getKey("key.keyboard.world.1"));
         //list.add(InputConstants.getKey("key.keyboard.world.2"));
         return list;
+    }
+
+    @SubscribeEvent
+    public void onRenderBar(RegisterGuiOverlaysEvent event) {
+        ShowKeyGui gui = new ShowKeyGui();
+        event.registerBelow(VanillaGuiOverlay.HOTBAR.id(), gui.id(), gui);
     }
 }
