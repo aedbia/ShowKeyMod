@@ -4,6 +4,7 @@ import aedbia.showKey.KeyInfoHelper;
 import aedbia.showKey.ShowKey;
 import aedbia.showKey.ShowKeyConfig;
 import aedbia.showKey.compatible.keybindsGalore.KeybindsGaloreCompatible;
+import aedbia.showKey.mixins.SKMixins;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.KeyMapping;
@@ -27,64 +28,65 @@ import java.util.stream.Collectors;
 
 public class ShowKeyGui implements IIngameOverlay {
 
-    private List<KeyMapping> displayKeyMappings = new ArrayList<>();
-
-    private List<KeyMapping> modifierMappings = new ArrayList<>();
+    private static final ResourceLocation button_down = new ResourceLocation(ShowKey.MODID, "textures/gui/button_down.png");
+    private static final ResourceLocation button_release = new ResourceLocation(ShowKey.MODID, "textures/gui/button_release.png");
+    private static final ScheduledThreadPoolExecutor scheduled = new ScheduledThreadPoolExecutor(1);
+    public static boolean reDraw = true;
     private final Minecraft mc = Minecraft.getInstance();
     private final String id;
+    private int tickInt = 0;
+    private List<KeyMapping> displayKeyMappings = new ArrayList<>();
+    private List<KeyMapping> modifierMappings = new ArrayList<>();
     private int activeKeyCount = 10;
-    public static boolean reDraw = true;
-    private static final ResourceLocation button_down = new ResourceLocation(ShowKey.MODID,"textures/gui/button_down.png");
-    private static final ResourceLocation button_release = new ResourceLocation(ShowKey.MODID,"textures/gui/button_release.png");
-    private static final ScheduledThreadPoolExecutor scheduled = new ScheduledThreadPoolExecutor(1);
     private Screen now;
 
-    public ShowKeyGui(){
+    public ShowKeyGui() {
         this.id = "keys";
-        scheduled.scheduleAtFixedRate(this::tick,0,100, TimeUnit.MILLISECONDS);
+        scheduled.scheduleAtFixedRate(this::tick, 0, 100, TimeUnit.MILLISECONDS);
     }
+
     @SuppressWarnings("unused")
     @Override
     public void render(ForgeIngameGui gui, PoseStack poseStack, float partialTick, int screenWidth, int screenHeight) {
         //LogUtils.getLogger().debug("1111adada");
         double scale = ShowKeyConfig.UIScaleNumber;
-        if(scale <0.1){
+        if (scale < 0.1) {
             scale = 0.5;
         }
         double x = 0;
-        double wight = (double) screenWidth /8;
-        double height = (double) screenHeight /(3* scale);
+        double wight = (double) screenWidth / 8;
+        double height = (double) screenHeight / (3 * scale);
         int count = 0;
-        int showCount = (int) (7/ scale);
-        double y = (screenHeight/ scale - height/showCount);
+        int showCount = (int) (7 / scale);
+        double y = (screenHeight / scale - height / showCount);
         boolean right = false;
         poseStack.scale((float) scale, (float) scale, 1f);
-        for (KeyMapping keyMapping:modifierMappings){
-            if(count>=2*showCount){
+        for (KeyMapping keyMapping : modifierMappings) {
+            if (count >= 2 * showCount) {
                 break;
             }
-            if(activeKeyCount/2 >= 1&&count==activeKeyCount/2){
-                x = screenWidth/ scale -wight;
-                y =(screenHeight/ scale - height/showCount);
+            if (activeKeyCount / 2 >= 1 && count == activeKeyCount / 2) {
+                x = screenWidth / scale - wight;
+                y = (screenHeight / scale - height / showCount);
                 right = true;
             }
-            if(keyMapping.getKeyConflictContext().isActive()&&keyMapping.getKeyModifier().isActive(keyMapping.getKeyConflictContext())) {
+            if (keyMapping.getKeyConflictContext().isActive() && keyMapping.getKeyModifier().isActive(keyMapping.getKeyConflictContext())) {
                 renderKeyInfo(poseStack, keyMapping, x, y, wight, height / showCount, right);
                 y -= (height / showCount);
                 count++;
             }
         }
-        if(count == 0){
+        if (count == 0) {
             for (KeyMapping keyMapping : displayKeyMappings) {
-                if(count>=2*showCount){
-                   break;
+                if (count >= 2 * showCount) {
+                    break;
                 }
-                if(activeKeyCount/2 >= 1&&count==activeKeyCount/2){
-                    x = screenWidth/ scale -wight;
-                    y =(screenHeight/ scale - height/showCount);
-                   right = true;
+                if (activeKeyCount / 2 >= 1 && count == activeKeyCount / 2) {
+                    x = screenWidth / scale - wight;
+                    y = (screenHeight / scale - height / showCount);
+                    right = true;
                 }
-                if(keyMapping.getKeyConflictContext().isActive()) {
+                if (keyMapping.getKeyConflictContext().isActive()) {
                     renderKeyInfo(poseStack, keyMapping, x, y, wight, height / showCount, right);
                     y -= (height / showCount);
                     count++;
@@ -92,41 +94,47 @@ public class ShowKeyGui implements IIngameOverlay {
             }
         }
         activeKeyCount = count;
-        poseStack.scale( (1/(float) scale),  (1/(float) scale), 1f);
+        poseStack.scale((1 / (float) scale), (1 / (float) scale), 1f);
     }
 
-    public void renderKeyInfo(PoseStack poseStack,KeyMapping keyMapping,double x, double y,double wight,double height,boolean right){
-        String key = keyMapping.getKey().getDisplayName().getString().replaceFirst("key.keyboard.","");
-        if(key.length()<=1){
+    public void renderKeyInfo(PoseStack poseStack, KeyMapping keyMapping, double x, double y, double wight, double height, boolean right) {
+        String key = keyMapping.getKey().getDisplayName().getString().replaceFirst("key.keyboard.", "");
+        if (key.length() <= 1) {
             key = key.toUpperCase();
         }
-        boolean isKeyDown = keyMapping.isDown();
-        int color = isKeyDown?0x808080:0xFFFFFF;
+        boolean isKeyDown = ((SKMixins.AccessorKeyMapping) keyMapping).getIsDown();
+        int color = isKeyDown ? 0x808080 : 0xFFFFFF;
         String keyName = new TranslatableComponent(keyMapping.getName()).getString();
-        int keyLoc = (int) (right?(x+wight*3/4):(x+wight/4));
-        int texLoc = (int) (right?(x+wight/2):x);
-        int keyNameLoc = (int)(right?(x-mc.font.width(keyName)+wight/2):(x+wight/2));
+        int keyLoc = (int) (right ? (x + wight * 3 / 4) : (x + wight / 4));
+        int texLoc = (int) (right ? (x + wight / 2) : x);
+        int keyNameLoc = (int) (right ? (x - mc.font.width(keyName) + wight / 2) : (x + wight / 2));
         ResourceLocation resourceLocation = isKeyDown ? button_down : button_release;
-        RenderSystem.setShaderTexture(0,resourceLocation);
-        GuiComponent.blit(poseStack,texLoc,(int) y,0,0,(int)(wight/2)-2,(int)height-2,(int)(wight/2)-2,(int)height-2);
-        GuiComponent.drawCenteredString(poseStack,mc.font, key, keyLoc, (int) y, color);
-        GuiComponent.drawString(poseStack,mc.font, keyName, keyNameLoc, (int) y, color);
+        RenderSystem.setShaderTexture(0, resourceLocation);
+        GuiComponent.blit(poseStack, texLoc, (int) y, 0, 0, (int) (wight / 2) - 2, (int) height - 2, (int) (wight / 2) - 2, (int) height - 2);
+        GuiComponent.drawCenteredString(poseStack, mc.font, key, keyLoc, (int) y, color);
+        GuiComponent.drawString(poseStack, mc.font, keyName, keyNameLoc, (int) y, color);
 
     }
-    private void tick(){
-        if(now != mc.screen){
+
+    private void tick() {
+        if (now != mc.screen) {
             now = mc.screen;
             reDraw = true;
         }
-        if(reDraw){
-            reDraw=false;
+        tickInt++;
+        if (tickInt > 1) {
+            tickInt = 0;
+            reDraw = true;
+        }
+        if (reDraw) {
+            reDraw = false;
             KeybindsGaloreCompatible.receiveIMCMessage();
             List<KeyMapping> list = Arrays.stream(mc.options.keyMappings).filter(KeyInfoHelper::isShowKeyMapping).collect(Collectors.toMap(KeyMapping::getKey, Function.identity(), (a, b) -> a)).values().stream().toList();
             modifierMappings = list.stream()
-                    .filter(a->a.getKeyModifier() != KeyModifier.NONE).sorted(Comparator.comparingInt(a->-a.getKey().getValue())).toList();
+                    .filter(a -> a.getKeyModifier() != KeyModifier.NONE).sorted(Comparator.comparingInt(a -> -a.getKey().getValue())).toList();
 
             displayKeyMappings = list.stream()
-                    .filter(a->a.getKeyModifier() == KeyModifier.NONE).sorted(Comparator.comparingInt(a->-a.getKey().getValue())).toList();
+                    .filter(a -> a.getKeyModifier() == KeyModifier.NONE).sorted(Comparator.comparingInt(a -> -a.getKey().getValue())).toList();
         }
 
     }

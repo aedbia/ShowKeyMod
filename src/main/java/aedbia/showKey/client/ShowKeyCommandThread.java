@@ -10,31 +10,33 @@ import org.apache.logging.log4j.Logger;
 import java.util.ArrayList;
 import java.util.List;
 
-public class ShowKeyCommandThread extends Thread{
+public class ShowKeyCommandThread extends Thread {
     private static final Logger LOGGER = LogManager.getLogger();
+    public static boolean stop = false;
+    @SuppressWarnings("FieldMayBeFinal")
+    private List<KeyMapping> keyMapping = new ArrayList<>();
+
     public ShowKeyCommandThread() {
         super("ShowKeyCommandThread");
         start();
     }
-    public static boolean stop = false;
-    @SuppressWarnings("FieldMayBeFinal")
-    private List<KeyMapping> keyMapping = new ArrayList<>();
+
     @Override
     public void run() {
-        LOGGER.debug("ShowKeyCommandThread"+" start!");
+        LOGGER.debug("ShowKeyCommandThread" + " start!");
         while (!stop) {
             //this.wait(1);
-            for (KeyMapping keyMapping: Minecraft.getInstance().options.keyMappings){
-                if(keyMapping.isDown()){
-                    if (!this.keyMapping.contains(keyMapping)&&Minecraft.getInstance().player != null) {
+            for (KeyMapping keyMapping : Minecraft.getInstance().options.keyMappings) {
+                if (keyMapping.isDown()) {
+                    if (!this.keyMapping.contains(keyMapping) && Minecraft.getInstance().player != null) {
                         this.keyMapping.add(keyMapping);
                         //noinspection NullableProblems
                         Minecraft.getInstance().gui.getChat().addMessage(new Component() {
                             @Override
                             public Style getStyle() {
                                 return Style.EMPTY.withUnderlined(true)
-                                        .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD,this.getString()))
-                                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT,new TranslatableComponent("tips.show_key.click_to_copy")));
+                                        .withClickEvent(new ClickEvent(ClickEvent.Action.COPY_TO_CLIPBOARD, this.getString()))
+                                        .withHoverEvent(new HoverEvent(HoverEvent.Action.SHOW_TEXT, new TranslatableComponent("tips.show_key.click_to_copy")));
                             }
 
                             @Override
@@ -63,9 +65,9 @@ public class ShowKeyCommandThread extends Thread{
                             }
                         });
                     }
-                }else this.keyMapping.remove(keyMapping);
+                } else this.keyMapping.remove(keyMapping);
             }
         }
-        LOGGER.debug("ShowKeyCommandThread"+" stop!");
+        LOGGER.debug("ShowKeyCommandThread" + " stop!");
     }
 }
