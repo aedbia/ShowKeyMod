@@ -18,8 +18,10 @@ public class ShowKeyConfig {
     private static final Map<KeyMapping, ModConfigSpec.BooleanValue> hideKey = new HashMap<>();
     private static final ModConfigSpec.ConfigValue<List<String>> KEYMAPPING_BLACK_LIST;
     private static final ModConfigSpec.ConfigValue<List<String>> KEYMAPPING_WHITE_LIST;
+    private static final ModConfigSpec.ConfigValue<String> DISPLAY_MODE;
     public static double UIScaleNumber;
     public static Map<KeyMapping, Boolean> hideKeyValue = new HashMap<>();
+    public static String displayMode = "BOTH";
     public static List<String> keyMappingBlackList = new ArrayList<>();
     public static List<String> keyMappingWhiteList = new ArrayList<>();
 
@@ -27,9 +29,14 @@ public class ShowKeyConfig {
         List<String> list = new ArrayList<>();
         list.add("example0");
         list.add("example1");
+        List<String> list0 = new ArrayList<>();
+        list0.add("BOTH");
+        list0.add("RIGHT");
+        list0.add("LEFT");
         UI_SCALE = BUILDER
                 .comment("UI_Scale")
                 .defineInRange("UI.UI_Scale", 0.5, 0.1, 1.5);
+        DISPLAY_MODE = BUILDER.comment("Value: BOTH,RIGHT,LEFT").define("UI.DisplayMode", "BOTH", a -> (a instanceof String v && list0.contains(v)));
         KEYMAPPING_BLACK_LIST = BUILDER
                 .comment("This is a black list for keymappings that you don't want display. You need put keymapping's name into this;")
                 .define("key.black_list.keymapping_black_list", list);
@@ -51,6 +58,7 @@ public class ShowKeyConfig {
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
+        displayMode = DISPLAY_MODE.get();
         keyMappingBlackList = KEYMAPPING_BLACK_LIST.get();
         keyMappingWhiteList = KEYMAPPING_WHITE_LIST.get();
         UIScaleNumber = UI_SCALE.get();
