@@ -18,8 +18,10 @@ public class ShowKeyConfig {
     private static final Map<KeyMapping, ForgeConfigSpec.BooleanValue> hideKey = new HashMap<>();
     private static final ForgeConfigSpec.ConfigValue<List<String>> KEYMAPPING_BLACK_LIST;
     private static final ForgeConfigSpec.ConfigValue<List<String>> KEYMAPPING_WHITE_LIST;
+    private static final ForgeConfigSpec.EnumValue<MODE> DISPLAY_MODE;
     public static double UIScaleNumber;
     public static Map<KeyMapping, Boolean> hideKeyValue = new HashMap<>();
+    public static int displayMode = 0;
     public static List<String> keyMappingBlackList = new ArrayList<>();
     public static List<String> keyMappingWhiteList = new ArrayList<>();
 
@@ -30,6 +32,7 @@ public class ShowKeyConfig {
         UI_SCALE = BUILDER
                 .comment("UI_Scale")
                 .defineInRange("UI.UI_Scale", 0.5, 0.1, 1.5);
+        DISPLAY_MODE = BUILDER.defineEnum("UI.DisplayMode", MODE.BOTH, MODE.values());
         KEYMAPPING_BLACK_LIST = BUILDER
                 .comment("This is a black list for keymappings that you don't want display. You need put keymapping's name into this;")
                 .define("key.black_list.keymapping_black_list", list);
@@ -51,6 +54,14 @@ public class ShowKeyConfig {
 
     @SubscribeEvent
     static void onLoad(final ModConfigEvent event) {
+
+        if (DISPLAY_MODE.get() == MODE.BOTH) {
+            displayMode = 0;
+        } else if (DISPLAY_MODE.get() == MODE.RIGHT) {
+            displayMode = 1;
+        } else if (DISPLAY_MODE.get() == MODE.LEFT) {
+            displayMode = 2;
+        }
         keyMappingBlackList = KEYMAPPING_BLACK_LIST.get();
         keyMappingWhiteList = KEYMAPPING_WHITE_LIST.get();
         UIScaleNumber = UI_SCALE.get();
@@ -59,5 +70,11 @@ public class ShowKeyConfig {
                 hideKeyValue.put(keyMapping, hideKey.get(keyMapping).get());
             }
         }
+    }
+
+    enum MODE {
+        BOTH,
+        RIGHT,
+        LEFT
     }
 }

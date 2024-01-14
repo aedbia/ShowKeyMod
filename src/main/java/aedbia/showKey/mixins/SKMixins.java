@@ -1,6 +1,6 @@
 package aedbia.showKey.mixins;
 
-import aedbia.showKey.KeyInfoHelper;
+import aedbia.showKey.client.ShowKeyCondition;
 import net.minecraft.client.KeyMapping;
 import org.spongepowered.asm.mixin.Final;
 import org.spongepowered.asm.mixin.Mixin;
@@ -25,12 +25,12 @@ public class SKMixins {
 
         @Inject(method = "consumeClick", at = @At("HEAD"))
         private void preClick(CallbackInfoReturnable<Boolean> cir) {
-            KeyInfoHelper.KEY_WORK.put(name, true);
+            ShowKeyCondition.RecordCondition(name);
         }
 
         @Inject(method = "isDown", at = @At("HEAD"))
         private void preDown(CallbackInfoReturnable<Boolean> cir) {
-            KeyInfoHelper.KEY_WORK.put(name, true);
+            ShowKeyCondition.RecordCondition(name);
         }
     }
 }

@@ -13,9 +13,10 @@ import java.util.List;
 
 public class ShowKeyCommandThread extends Thread {
     private static final Logger LOGGER = LogUtils.getLogger();
-    public static boolean stop = false;
+    public static boolean stop = true;
     @SuppressWarnings("FieldMayBeFinal")
     private List<KeyMapping> keyMapping = new ArrayList<>();
+
     public ShowKeyCommandThread() {
         super("ShowKeyCommandThread");
         start();

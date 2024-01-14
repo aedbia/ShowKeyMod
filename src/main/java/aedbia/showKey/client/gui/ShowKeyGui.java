@@ -95,7 +95,7 @@ public class ShowKeyGui implements IGuiOverlay {
         if (key.length() <= 1) {
             key = key.toUpperCase();
         }
-        boolean isKeyDown = ((SKMixins.AccessorKeyMapping)keyMapping).getIsDown();
+        boolean isKeyDown = ((SKMixins.AccessorKeyMapping) keyMapping).getIsDown();
         int color = isKeyDown ? 0x808080 : 0xFFFFFF;
         String keyName = Component.translatable(keyMapping.getName()).getString();
         int keyLoc = (int) (right ? (x + wight * 3 / 4) : (x + wight / 4));
@@ -112,12 +112,12 @@ public class ShowKeyGui implements IGuiOverlay {
     }
 
     private void tick() {
-            KeybindsGaloreCompatible.receiveIMCMessage();
-            List<KeyMapping> list = Arrays.stream(mc.options.keyMappings).filter(KeyInfoHelper::isShowKeyMapping).collect(Collectors.toMap(KeyMapping::getKey, Function.identity(), (a, b) -> a)).values().stream().toList();
-            modifierMappings = list.stream()
-                    .filter(a -> a.getKeyModifier() != KeyModifier.NONE).sorted(Comparator.comparingInt(a -> -a.getKey().getValue())).toList();
+        KeybindsGaloreCompatible.receiveIMCMessage();
+        List<KeyMapping> list = Arrays.stream(mc.options.keyMappings).filter(KeyInfoHelper::isShowKeyMapping).collect(Collectors.toMap(KeyMapping::getKey, Function.identity(), (a, b) -> a)).values().stream().toList();
+        modifierMappings = list.stream()
+                .filter(a -> a.getKeyModifier() != KeyModifier.NONE).sorted(Comparator.comparingInt(a -> -a.getKey().getValue())).toList();
 
-            displayKeyMappings = list.stream()
-                    .filter(a -> a.getKeyModifier() == KeyModifier.NONE).sorted(Comparator.comparingInt(a -> -a.getKey().getValue())).toList();
+        displayKeyMappings = list.stream()
+                .filter(a -> a.getKeyModifier() == KeyModifier.NONE).sorted(Comparator.comparingInt(a -> -a.getKey().getValue())).toList();
     }
 }

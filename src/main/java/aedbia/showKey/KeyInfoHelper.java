@@ -1,5 +1,6 @@
 package aedbia.showKey;
 
+import aedbia.showKey.client.ShowKeyCondition;
 import aedbia.showKey.client.gui.ShowKeyGui;
 import aedbia.showKey.compatible.keybindsGalore.KeybindsGaloreCompatible;
 import com.mojang.blaze3d.platform.InputConstants;
@@ -9,9 +10,7 @@ import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
 import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 
 public class KeyInfoHelper {
     @SuppressWarnings("NoTranslation")
@@ -41,8 +40,6 @@ public class KeyInfoHelper {
 
             };
 
-    public static Map<String, Boolean> KEY_WORK = new HashMap<>();
-
     protected static boolean containKeys(KeyMapping keyMapping) {
         for (InputConstants.Key key : keysToCheck) {
             if (keyMapping.getKey().equals(key)) {
@@ -60,16 +57,7 @@ public class KeyInfoHelper {
                 return false;
             } else if (((!KeybindsGaloreCompatible.keybindsGaloreBoundKeyList.containsKey(keyMapping.getKey()))
                     || KeybindsGaloreCompatible.keybindsGaloreBoundKeyList.get(keyMapping.getKey()) == keyMapping) && (!keyMapping.isUnbound())) {
-
-                if (!KEY_WORK.containsKey(keyMapping.getName())) {
-                    KEY_WORK.put(keyMapping.getName(), false);
-                }
-                if (KEY_WORK.get(keyMapping.getName())) {
-                    KEY_WORK.put(keyMapping.getName(), false);
-                    return true;
-                } else {
-                    return false;
-                }
+                return ShowKeyCondition.ALL_RULE.containsKey(keyMapping.getName()) && ShowKeyCondition.ALL_RULE.get(keyMapping.getName()).IsActive();
             } else {
                 return false;
             }
