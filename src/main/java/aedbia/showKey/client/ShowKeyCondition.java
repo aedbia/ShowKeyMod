@@ -1,165 +1,121 @@
 package aedbia.showKey.client;
 
 import net.minecraft.client.Minecraft;
-import net.minecraft.client.gui.screens.Screen;
+import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.function.Supplier;
 
 public class ShowKeyCondition {
-    public static Map<String, ShowKeyCondition> ALL_RULE = new HashMap<>();
-    private final Minecraft mc = Minecraft.getInstance();
-    public List<Class<? extends Screen>> screens = new ArrayList<>();
-    public List<String> handItems = new ArrayList<>();
-    public List<String> OffHandItems = new ArrayList<>();
-    public List<String> wearItem = new ArrayList<>();
+
+    public boolean hide = false;
+    public List<String> boundMainHandItem = new ArrayList<>();
+    public List<String> boundOffHandItem = new ArrayList<>();
+    public List<String> boundEquipment = new ArrayList<>();
+    public List<String> boundVehicle = new ArrayList<>();
+    public List<String> boundScreens = new ArrayList<>();
     public List<Supplier<Boolean>> OtherConditions = new ArrayList<>();
-    public List<String> riders = new ArrayList<>();
-    public boolean NoRider = false;
-    public boolean NullScreenShow = false;
-    public boolean NoMainHainItem = false;
-    public boolean NoOffHandItem = false;
-    public boolean NoWearItem = false;
 
-    private boolean autoCheck;
-
-    public ShowKeyCondition(){
-        autoCheck = true;
-    }
-
-    public ShowKeyCondition(boolean autoCheck){
-        this.autoCheck = autoCheck;
-    }
-
-    public static void RecordCondition(String name) {
-        if (ShowKeyCommandThread.stop) {
-            if (!ShowKeyCondition.ALL_RULE.containsKey(name)) {
-                ShowKeyCondition.ALL_RULE.put(name, new ShowKeyCondition());
-            }
-            if (ShowKeyCondition.ALL_RULE.containsKey(name)&&ShowKeyCondition.ALL_RULE.get(name).autoCheck) {
-                Minecraft mc = Minecraft.getInstance();
-                if (mc.screen == null) {
-                    ShowKeyCondition.ALL_RULE.get(name).NullScreenShow = true;
-                } else {
-                    ShowKeyCondition.ALL_RULE.get(name).screens.add(mc.screen.getClass());
-                }
-                if (mc.player != null) {
-                    if (mc.player.getVehicle() == null) {
-                        ShowKeyCondition.ALL_RULE.get(name).NoRider = true;
-                    } else {
-                        ShowKeyCondition.ALL_RULE.get(name).riders.add(mc.player.getVehicle().getType().getCategory().getName());
-                    }
-                    if (!ShowKeyCondition.ALL_RULE.get(name).NoMainHainItem) {
-                        if (mc.player.getItemInHand(InteractionHand.MAIN_HAND).isEmpty()) {
-                            ShowKeyCondition.ALL_RULE.get(name).NoMainHainItem = true;
-                        } else {
-
-                            ShowKeyCondition.ALL_RULE.get(name).handItems.add(mc.player.getItemInHand(InteractionHand.MAIN_HAND).getItem().toString());
-                        }
-                    }
-                    if (!ShowKeyCondition.ALL_RULE.get(name).NoOffHandItem) {
-                        if (mc.player.getItemInHand(InteractionHand.OFF_HAND).isEmpty()) {
-                            ShowKeyCondition.ALL_RULE.get(name).NoOffHandItem = true;
-                        } else {
-                            ShowKeyCondition.ALL_RULE.get(name).OffHandItems.add(mc.player.getItemInHand(InteractionHand.OFF_HAND).getItem().toString());
-                        }
-                    }
-                    if (!ShowKeyCondition.ALL_RULE.get(name).NoWearItem) {
-                        List<String> a = new ArrayList<>();
-                        for (ItemStack itemStack : mc.player.getArmorSlots()) {
-                            if (!itemStack.isEmpty()) {
-                                a.add(itemStack.getItem().toString());
-                            }
-                        }
-                        if (a.isEmpty()) {
-                            ShowKeyCondition.ALL_RULE.get(name).NoWearItem = true;
-                        } else {
-                            for (String itemName : a) {
-                                ShowKeyCondition.ALL_RULE.get(name).wearItem.add(itemName);
-                            }
-                        }
-                    }
-                }
-            }
+    public boolean isActive() {
+        if (hide) {
+            return false;
         }
-    }
 
-    public boolean IsActive() {
-
+        Minecraft mc = Minecraft.getInstance();
         boolean a;
-        if (mc.screen == null) {
-            a = NullScreenShow;
+        if (empty(boundScreens)) {
+            a = true;
         } else {
-            a = !screens.isEmpty() && screens.contains(mc.screen.getClass());
+            if (mc.screen == null) {
+                a = boundScreens.contains("null");
+            } else {
+                a = boundScreens.contains(mc.screen.getClass().getName());
+            }
         }
         if (!a) {
             return false;
         }
-        boolean b = false;
-        boolean c = false;
-        boolean d = false;
-        boolean e;
         if (mc.player != null) {
-            if (NoMainHainItem) {
+
+            LocalPlayer player = mc.player;
+            boolean b;
+            if (empty(boundMainHandItem)) {
                 b = true;
-            } else if (!mc.player.getItemInHand(InteractionHand.MAIN_HAND).isEmpty()) {
-                String HandItemName = mc.player.getItemInHand(InteractionHand.MAIN_HAND).getItem().toString();
-                b = handItems.contains(HandItemName);
+            } else {
+                ItemStack stack = player.getItemInHand(InteractionHand.MAIN_HAND);
+                if (stack.isEmpty()) {
+                    b = boundMainHandItem.contains("null");
+                } else {
+                    b = boundMainHandItem.contains(stack.getDescriptionId());
+                }
             }
             if (!b) {
                 return false;
             }
-            if (NoOffHandItem) {
+            boolean c;
+            if (empty(boundOffHandItem)) {
                 c = true;
-            } else if (!mc.player.getItemInHand(InteractionHand.OFF_HAND).isEmpty()) {
-                String HandItemName = mc.player.getItemInHand(InteractionHand.OFF_HAND).getItem().toString();
-                c = OffHandItems.contains(HandItemName);
+            } else {
+                ItemStack stack = player.getItemInHand(InteractionHand.OFF_HAND);
+                if (stack.isEmpty()) {
+                    c = boundOffHandItem.contains("null");
+                } else {
+                    c = boundOffHandItem.contains(stack.getDescriptionId());
+                }
             }
             if (!c) {
                 return false;
             }
-            if (NoWearItem) {
+            boolean d;
+            if (empty(boundEquipment)) {
                 d = true;
             } else {
-                for (ItemStack itemStack : mc.player.getArmorSlots()) {
-                    if (!d && !itemStack.isEmpty() && wearItem.contains(itemStack.getItem().toString())) {
-                        d = true;
+                List<ItemStack> stacks = new ArrayList<>();
+                for (ItemStack stack : player.getArmorSlots()) {
+                    if (!stack.isEmpty()) {
+                        stacks.add(stack);
                     }
+                }
+                if (stacks.isEmpty()) {
+                    d = boundEquipment.contains("null");
+                } else {
+                    d = stacks.stream().anyMatch(o -> boundEquipment.contains(o.getDescriptionId()));
                 }
             }
             if (!d) {
                 return false;
             }
-            if (mc.player.getVehicle() == null) {
-                e = NoRider;
+            boolean e;
+            if (empty(boundVehicle)) {
+                e = true;
             } else {
-                e = !riders.isEmpty() && riders.contains(mc.player.getVehicle().getType().getCategory().getName());
+                Entity vehicle = player.getVehicle();
+                if (vehicle == null) {
+                    e = boundVehicle.contains("null");
+                } else {
+                    e = boundVehicle.contains(vehicle.getType().toString());
+                }
             }
             if (!e) {
                 return false;
             }
-        }else {
-            return false;
-        }
-        boolean f = false;
-        if (OtherConditions.isEmpty()) {
-            f = true;
-        } else {
-            for (Supplier<Boolean> v : OtherConditions) {
-                if (!v.get()) {
-                    f = false;
-                    break;
-                } else {
-                    f = true;
-                }
+            boolean f;
+            if (OtherConditions.isEmpty()) {
+                f = true;
+            } else {
+                f = OtherConditions.stream().allMatch(Supplier::get);
             }
+            return f;
         }
-        //ShowKey.LOGGER.debug(Boolean.toString(e));
-        return f;
+        return false;
+    }
+
+    private boolean empty(List<String> list) {
+        List<String> list1 = list.stream().filter(a -> !a.contains("example")).toList();
+        return list1.isEmpty();
     }
 }

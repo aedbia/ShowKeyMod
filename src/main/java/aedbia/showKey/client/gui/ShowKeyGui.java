@@ -2,9 +2,8 @@ package aedbia.showKey.client.gui;
 
 import aedbia.showKey.KeyInfoHelper;
 import aedbia.showKey.ShowKey;
-import aedbia.showKey.ShowKeyConfig;
 import aedbia.showKey.compatible.keybindsGalore.KeybindsGaloreCompatible;
-import aedbia.showKey.mixins.SKMixins;
+import aedbia.showKey.configs.ShowKeyConfig;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
@@ -18,8 +17,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
 import java.util.List;
-import java.util.concurrent.ScheduledThreadPoolExecutor;
-import java.util.concurrent.TimeUnit;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -27,21 +24,21 @@ public class ShowKeyGui implements IGuiOverlay {
 
     private static final ResourceLocation button_down = new ResourceLocation(ShowKey.MODID, "textures/gui/button_down.png");
     private static final ResourceLocation button_release = new ResourceLocation(ShowKey.MODID, "textures/gui/button_release.png");
-    private static final ScheduledThreadPoolExecutor scheduled = new ScheduledThreadPoolExecutor(1);
     private final Minecraft mc = Minecraft.getInstance();
     private final String id;
+    public boolean onRender = false;
     private List<KeyMapping> displayKeyMappings = new ArrayList<>();
     private List<KeyMapping> modifierMappings = new ArrayList<>();
     private int activeKeyCount = 10;
 
     public ShowKeyGui() {
         this.id = "keys";
-        scheduled.scheduleAtFixedRate(this::tick, 0, 100, TimeUnit.MILLISECONDS);
     }
 
     @SuppressWarnings("unused")
     @Override
     public void render(ForgeGui gui, GuiGraphics guiGraphics, float partialTick, int screenWidth, int screenHeight) {
+        onRender = true;
         double scale = ShowKeyConfig.UIScaleNumber;
         if (scale < 0.1) {
             scale = 0.5;
@@ -95,7 +92,7 @@ public class ShowKeyGui implements IGuiOverlay {
         if (key.length() <= 1) {
             key = key.toUpperCase();
         }
-        boolean isKeyDown = ((SKMixins.AccessorKeyMapping) keyMapping).getIsDown();
+        boolean isKeyDown = keyMapping.isDown();
         int color = isKeyDown ? 0x808080 : 0xFFFFFF;
         String keyName = Component.translatable(keyMapping.getName()).getString();
         int keyLoc = (int) (right ? (x + wight * 3 / 4) : (x + wight / 4));
@@ -111,7 +108,7 @@ public class ShowKeyGui implements IGuiOverlay {
         return this.id;
     }
 
-    private void tick() {
+    public void tick() {
         KeybindsGaloreCompatible.receiveIMCMessage();
         List<KeyMapping> list = Arrays.stream(mc.options.keyMappings).filter(KeyInfoHelper::isShowKeyMapping).collect(Collectors.toMap(KeyMapping::getKey, Function.identity(), (a, b) -> a)).values().stream().toList();
         modifierMappings = list.stream()
