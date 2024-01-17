@@ -3,10 +3,10 @@ package aedbia.showKey.compatible.keybindsGalore;
 
 import aedbia.showKey.ShowKey;
 import com.mojang.blaze3d.platform.InputConstants;
-import com.mojang.logging.LogUtils;
 import net.minecraft.client.KeyMapping;
 import net.minecraftforge.fml.InterModComms;
 import net.minecraftforge.fml.ModList;
+import org.apache.logging.log4j.LogManager;
 
 import java.util.HashMap;
 import java.util.List;
@@ -20,7 +20,7 @@ public class KeybindsGaloreCompatible {
         String modID = ShowKey.MODID;
         List<InterModComms.IMCMessage> stream = InterModComms.getMessages(modID).toList();
         if (!stream.isEmpty()) {
-            LogUtils.getLogger().debug(modID + " receive " + stream.size());
+            LogManager.getLogger().debug(modID + " receive " + stream.size());
         } else {
             return;
         }
