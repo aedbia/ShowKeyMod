@@ -1,3 +1,6 @@
 {
-  "tips.show_key.click_to_copy": "click to copy"
+  "tips.show_key.click_to_copy": "click to copy",
+  "tips.show_key.monitor_screen": "open any screen and press right control to get screen class name.",
+  "Show_key.Now.Screen": "Now display screen class:",
+  "show_key.Now.riding": "Now ride:"
 }
