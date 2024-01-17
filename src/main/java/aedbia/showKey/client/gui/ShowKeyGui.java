@@ -31,6 +31,8 @@ public class ShowKeyGui implements IGuiOverlay {
     private List<KeyMapping> modifierMappings = new ArrayList<>();
     private int activeKeyCount = 10;
 
+    private int showCount = 7;
+
     public ShowKeyGui() {
         this.id = "keys";
     }
@@ -40,6 +42,7 @@ public class ShowKeyGui implements IGuiOverlay {
     public void render(ForgeGui gui, GuiGraphics guiGraphics, float partialTick, int screenWidth, int screenHeight) {
         onRender = true;
         double scale = ShowKeyConfig.UIScaleNumber;
+        int mode = ShowKeyConfig.displayMode;
         if (scale < 0.1) {
             scale = 0.5;
         }
@@ -47,15 +50,14 @@ public class ShowKeyGui implements IGuiOverlay {
         double wight = (double) screenWidth / 8;
         double height = (double) screenHeight / (3 * scale);
         int count = 0;
-        int showCount = (int) (7 / scale);
         double y = (screenHeight / scale - height / showCount);
         boolean right = false;
         guiGraphics.pose().scale((float) scale, (float) scale, 1f);
         for (KeyMapping keyMapping : modifierMappings) {
-            if (count >= 2 * showCount) {
+            if (count >= 2 * showCount || (mode != 0 && count >= showCount)) {
                 break;
             }
-            if (activeKeyCount / 2 >= 1 && count == activeKeyCount / 2) {
+            if ((mode == 0 && activeKeyCount / 2 >= 1 && count == activeKeyCount / 2) || (mode == 1 && count == 0)) {
                 x = screenWidth / scale - wight;
                 y = (screenHeight / scale - height / showCount);
                 right = true;
@@ -68,10 +70,10 @@ public class ShowKeyGui implements IGuiOverlay {
         }
         if (count == 0) {
             for (KeyMapping keyMapping : displayKeyMappings) {
-                if (count >= 2 * showCount) {
+                if (count >= 2 * showCount || (mode != 0 && count >= showCount)) {
                     break;
                 }
-                if (activeKeyCount / 2 >= 1 && count == activeKeyCount / 2) {
+                if ((mode == 0 && activeKeyCount / 2 >= 1 && count == activeKeyCount / 2) || (mode == 1 && count == 0)) {
                     x = screenWidth / scale - wight;
                     y = (screenHeight / scale - height / showCount);
                     right = true;
@@ -109,12 +111,23 @@ public class ShowKeyGui implements IGuiOverlay {
     }
 
     public void tick() {
+        double scale = ShowKeyConfig.UIScaleNumber;
+        showCount = (int) (7 / scale);
         KeybindsGaloreCompatible.receiveIMCMessage();
         List<KeyMapping> list = Arrays.stream(mc.options.keyMappings).filter(KeyInfoHelper::isShowKeyMapping).collect(Collectors.toMap(KeyMapping::getKey, Function.identity(), (a, b) -> a)).values().stream().toList();
-        modifierMappings = list.stream()
+        List<KeyMapping> modifier = list.stream()
                 .filter(a -> a.getKeyModifier() != KeyModifier.NONE).sorted(Comparator.comparingInt(a -> -a.getKey().getValue())).toList();
-
-        displayKeyMappings = list.stream()
+        if (modifier.size() > showCount) {
+            modifierMappings = modifier.subList(modifier.size() - showCount, modifier.size());
+        } else {
+            modifierMappings = modifier;
+        }
+        List<KeyMapping> noModifier = list.stream()
                 .filter(a -> a.getKeyModifier() == KeyModifier.NONE).sorted(Comparator.comparingInt(a -> -a.getKey().getValue())).toList();
+        if (noModifier.size() > showCount) {
+            displayKeyMappings = noModifier.subList(noModifier.size() - showCount, noModifier.size());
+        } else {
+            displayKeyMappings = noModifier;
+        }
     }
 }

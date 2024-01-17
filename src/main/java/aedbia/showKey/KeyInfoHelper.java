@@ -44,7 +44,20 @@ public class KeyInfoHelper {
                     InputConstants.getKey("key.keyboard.6"),
                     InputConstants.getKey("key.keyboard.7"),
                     InputConstants.getKey("key.keyboard.8"),
-                    InputConstants.getKey("key.keyboard.9")
+                    InputConstants.getKey("key.keyboard.9"),
+                    InputConstants.getKey("key.keyboard.f1"),
+                    InputConstants.getKey("key.keyboard.f2"),
+                    InputConstants.getKey("key.keyboard.f3"),
+                    InputConstants.getKey("key.keyboard.f4"),
+                    InputConstants.getKey("key.keyboard.f5"),
+                    InputConstants.getKey("key.keyboard.f6"),
+                    InputConstants.getKey("key.keyboard.f7"),
+                    InputConstants.getKey("key.keyboard.f8"),
+                    InputConstants.getKey("key.keyboard.f9"),
+                    InputConstants.getKey("key.keyboard.f10"),
+                    InputConstants.getKey("key.keyboard.f11"),
+                    InputConstants.getKey("key.keyboard.f12")
+
 
             };
     public static Map<String, ShowKeyCondition> KEY_DISPLAY_RULE = new HashMap<>();
@@ -59,7 +72,6 @@ public class KeyInfoHelper {
     }
 
     public static boolean isShowKeyMapping(KeyMapping keyMapping) {
-
         if (keyMapping.isUnbound()) {
             return false;
         } else {

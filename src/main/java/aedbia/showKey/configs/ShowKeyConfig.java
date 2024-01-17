@@ -88,7 +88,6 @@ public class ShowKeyConfig {
             KeyConfig.loadAll();
             loadKeyConfigData();
         }
-        KeyInfoHelper.start();
     }
 
     public static void loadKeyConfigData() {

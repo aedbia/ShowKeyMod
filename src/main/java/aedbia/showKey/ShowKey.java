@@ -44,6 +44,7 @@ public class ShowKey {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
             ShowKeyConfig.initKeyConfig();
+            KeyInfoHelper.start();
         }
     }
 }
