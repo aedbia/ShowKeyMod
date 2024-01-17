@@ -1,3 +1,5 @@
 {
-  "tips.show_key.click_to_copy": "点击复制到粘贴板"
+  "tips.show_key.click_to_copy": "点击复制到粘贴板",
+  "tips.show_key.monitor_screen": "开始获取界面信息，按下右ctrl来获取当前界面的类名。",
+  "Show_key.Now.Screen": "现在打开的界面:"
 }
