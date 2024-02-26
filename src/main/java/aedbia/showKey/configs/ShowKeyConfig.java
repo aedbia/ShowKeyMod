@@ -25,18 +25,23 @@ public class ShowKeyConfig {
     public static final String VEHICLES = ".Bound vehicles";
     public static final String SCREENS = ".Bound screens";
     public static final ForgeConfigSpec SPEC;
+    public static final String MAIN_HAND_ITEM = ".Bound main hand items";
     private static final ForgeConfigSpec.Builder BUILDER = new ForgeConfigSpec.Builder();
     private static final ForgeConfigSpec.DoubleValue UI_SCALE;
     private static final ForgeConfigSpec.EnumValue<MODE> DISPLAY_MODE;
     public static double UIScaleNumber;
     public static int displayMode = 0;
     public static Map<String, String> keyValuePaths = new HashMap<>();
-    public static String MAIN_HAND_ITEM = ".Bound main hand items";
+    public static List<String> keyMappingWhiteList = new ArrayList<>();
+    private static final ForgeConfigSpec.ConfigValue<List<String>> KEYMAPPING_WHITE_LIST;
 
     static {
         UI_SCALE = BUILDER
                 .comment("UI_Scale")
                 .defineInRange("UI.UI_Scale", 0.5, 0.1, 1.5);
+        KEYMAPPING_WHITE_LIST = BUILDER
+                .comment("This is a white list for keymappings that you want display. You need put keymapping's name into this;")
+                .define("key.black_list.keymapping_white_list", new ArrayList<>());
         DISPLAY_MODE = BUILDER.defineEnum("UI.DisplayMode", MODE.BOTH, MODE.values());
         SPEC = BUILDER.build();
     }
@@ -51,6 +56,7 @@ public class ShowKeyConfig {
             displayMode = 2;
         }
         UIScaleNumber = UI_SCALE.get();
+        keyMappingWhiteList = KEYMAPPING_WHITE_LIST.get();
     }
 
     public static void initKeyConfig() {

@@ -13,6 +13,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.ScheduledThreadPoolExecutor;
@@ -75,15 +76,20 @@ public class KeyInfoHelper {
         if (keyMapping.isUnbound()) {
             return false;
         } else {
-            if (KeybindsGaloreCompatible.keybindsGaloreBoundKeyList.containsKey(keyMapping.getKey())
-                    && KeybindsGaloreCompatible.keybindsGaloreBoundKeyList.get(keyMapping.getKey()) != keyMapping) {
-                return false;
-            }
-            String name = keyMapping.getName();
-            if (KEY_DISPLAY_RULE.containsKey(name)) {
-                ShowKeyCondition condition = KEY_DISPLAY_RULE.get(name);
-                return condition.isActive();
-            } else {
+            List<String> list = ShowKeyConfig.keyMappingWhiteList.stream().filter(a -> !a.contains("example")).toList();
+            if(list.isEmpty()||list.contains(keyMapping.getName())) {
+                if (KeybindsGaloreCompatible.keybindsGaloreBoundKeyList.containsKey(keyMapping.getKey())
+                        && KeybindsGaloreCompatible.keybindsGaloreBoundKeyList.get(keyMapping.getKey()) != keyMapping) {
+                    return false;
+                }
+                String name = keyMapping.getName();
+                if (KEY_DISPLAY_RULE.containsKey(name)) {
+                    ShowKeyCondition condition = KEY_DISPLAY_RULE.get(name);
+                    return condition.isActive();
+                } else {
+                    return false;
+                }
+            }else {
                 return false;
             }
         }
