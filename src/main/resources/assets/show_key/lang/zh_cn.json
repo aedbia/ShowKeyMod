@@ -1,5 +1,9 @@
 {
   "tips.show_key.click_to_copy": "点击复制到粘贴板",
   "tips.show_key.monitor_screen": "开始获取界面信息，按下右ctrl来获取当前界面的类名。",
-  "Show_key.Now.Screen": "现在打开的界面:"
+  "Show_key.Now.Screen": "现在打开的界面:",
+  "monitor_keys_start": "开始记录键位操作",
+  "monitor_keys_stop": "停止记录键位操作",
+  "monitor_screen_stop": "停止数据记录",
+  "monitor_screen_start": "开始数据记录，按右ctrl键显示当前信息"
 }

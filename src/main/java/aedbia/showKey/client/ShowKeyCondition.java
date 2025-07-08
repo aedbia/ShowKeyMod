@@ -6,6 +6,7 @@ import net.minecraft.world.InteractionHand;
 import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.ItemStack;
 
+import java.awt.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Supplier;
@@ -13,6 +14,9 @@ import java.util.function.Supplier;
 public class ShowKeyCondition {
 
     public boolean hide = false;
+    public boolean customPosition = false;
+    public Point coordinate;
+    public boolean conditionDisplay = false;
     public List<String> boundMainHandItem = new ArrayList<>();
     public List<String> boundOffHandItem = new ArrayList<>();
     public List<String> boundEquipment = new ArrayList<>();
@@ -24,7 +28,9 @@ public class ShowKeyCondition {
         if (hide) {
             return false;
         }
-
+        if(!conditionDisplay){
+            return true;
+        }
         Minecraft mc = Minecraft.getInstance();
         boolean a;
         if (empty(boundScreens)) {

@@ -3,6 +3,8 @@ package aedbia.showKey;
 import aedbia.showKey.client.ShowKeyCommandThread;
 import aedbia.showKey.configs.ShowKeyConfig;
 import com.mojang.logging.LogUtils;
+import net.minecraft.client.Minecraft;
+import net.minecraft.resources.ResourceLocation;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.client.event.RegisterClientCommandsEvent;
 import net.minecraftforge.common.MinecraftForge;
@@ -31,7 +33,7 @@ public class ShowKey {
         MinecraftForge.EVENT_BUS.register(this);
         ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ShowKeyConfig.SPEC);
         modEventBus.register(new KeyInfoHelper());
-
+        Minecraft.getInstance().getResourceManager().getResource(new ResourceLocation(""));
     }
 
     @SubscribeEvent

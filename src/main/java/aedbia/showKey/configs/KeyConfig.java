@@ -16,7 +16,7 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
 
-@SuppressWarnings({"unused", "FieldCanBeLocal", "FieldMayBeFinal", "ResultOfMethodCallIgnored", "UnusedReturnValue"})
+@SuppressWarnings({"FieldCanBeLocal", "FieldMayBeFinal", "ResultOfMethodCallIgnored", "UnusedReturnValue"})
 public class KeyConfig {
     private static List<KeyConfig> keyConfigs = new ArrayList<>();
     private final Path path;
@@ -43,6 +43,9 @@ public class KeyConfig {
     }
 
     public static void loadAll() {
+        if (keyConfigs.isEmpty()){
+            return;
+        }
         keyConfigs.forEach(KeyConfig::load);
     }
 
@@ -134,6 +137,7 @@ public class KeyConfig {
     public <T> Value<T> Add(String path, T defaultValue, String description) {
         return new Value<>(path, defaultValue, description);
     }
+
 
     public class Value<T> {
         final String path;

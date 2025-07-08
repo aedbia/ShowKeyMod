@@ -31,6 +31,7 @@ public class ShowKeyCommandThread extends Thread {
         super("ShowKeyCommandThread");
     }
 
+    @SuppressWarnings("resource")
     public static void listHoldItem() {
         if (Minecraft.getInstance().player != null) {
             LocalPlayer player = Minecraft.getInstance().player;
@@ -51,6 +52,7 @@ public class ShowKeyCommandThread extends Thread {
         }
     }
 
+    @SuppressWarnings("resource")
     public static void listEquipItem() {
         if (Minecraft.getInstance().player != null) {
             LocalPlayer player = Minecraft.getInstance().player;
@@ -86,6 +88,7 @@ public class ShowKeyCommandThread extends Thread {
         }
     }
 
+    @SuppressWarnings("resource")
     public static void listRideVehicle() {
         if (Minecraft.getInstance().player != null) {
             LocalPlayer player = Minecraft.getInstance().player;
@@ -95,7 +98,7 @@ public class ShowKeyCommandThread extends Thread {
             } else {
                 ride = "null";
             }
-            String a = Component.translatable("commands.ride.already_riding").getString().replace("%s", "");
+            String a = Component.translatable("commands.ride.already_riding").getString().replace("%s", "")+":";
             Minecraft.getInstance().gui.getChat().addMessage(getCopyComponent(a, ride));
         }
     }
@@ -110,6 +113,7 @@ public class ShowKeyCommandThread extends Thread {
         }
     }
 
+    @SuppressWarnings("resource")
     public static void registerCommands(RegisterClientCommandsEvent event) {
         LiteralArgumentBuilder<CommandSourceStack> commands = Commands.literal(ShowKey.MODID).requires(a -> a.hasPermission(2));
         event.getDispatcher()
@@ -119,13 +123,17 @@ public class ShowKeyCommandThread extends Thread {
                                 thread = new ShowKeyCommandThread();
                                 thread.stop = false;
                                 thread.getAllScreen = false;
+                                Minecraft.getInstance().gui.getChat().addMessage(Component.translatable("monitor_keys_start"));
                                 thread.start();
                             }else {
                                 if(!thread.getAllScreen){
                                     thread.stop = true;
                                     thread = null;
+                                    Minecraft.getInstance().gui.getChat().addMessage(Component.translatable("monitor_keys_stop"));
                                 }else {
                                     thread.getAllScreen = false;
+                                    Minecraft.getInstance().gui.getChat().addMessage(Component.translatable("monitor_screen_stop"));
+                                    Minecraft.getInstance().gui.getChat().addMessage(Component.translatable("monitor_keys_start"));
                                 }
                             }
                             return 1;
@@ -137,13 +145,17 @@ public class ShowKeyCommandThread extends Thread {
                                 thread = new ShowKeyCommandThread();
                                 thread.stop = false;
                                 thread.getAllScreen = true;
+                                Minecraft.getInstance().gui.getChat().addMessage(Component.translatable("monitor_screen_start"));
                                 thread.start();
                             }else {
                                 if(thread.getAllScreen){
                                     thread.stop = true;
                                     thread = null;
+                                    Minecraft.getInstance().gui.getChat().addMessage(Component.translatable("monitor_screen_stop"));
                                 }else {
                                     thread.getAllScreen = true;
+                                    Minecraft.getInstance().gui.getChat().addMessage(Component.translatable("monitor_keys_stop"));
+                                    Minecraft.getInstance().gui.getChat().addMessage(Component.translatable("monitor_screen_start"));
                                 }
                             }
                             return 1;
@@ -168,6 +180,7 @@ public class ShowKeyCommandThread extends Thread {
                         }))));
     }
 
+    @SuppressWarnings("resource")
     @Override
     public void run() {
         LOGGER.debug("ShowKeyCommandThread" + " start!");

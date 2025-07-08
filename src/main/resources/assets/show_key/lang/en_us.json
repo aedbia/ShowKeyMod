@@ -1,5 +1,9 @@
 {
   "tips.show_key.click_to_copy": "click to copy",
   "tips.show_key.monitor_screen": "open any screen and press right control to get screen class name.",
-  "Show_key.Now.Screen": "Now display screen class:"
+  "Show_key.Now.Screen": "Now display screen class:",
+  "monitor_keys_start": "Monitor keymappings start",
+  "monitor_keys_stop": "Monitor keymappings stop",
+  "monitor_screen_stop": "Monitor screen stop",
+  "monitor_screen_start": "Monitor screen start"
 }

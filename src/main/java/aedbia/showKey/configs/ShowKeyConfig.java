@@ -11,6 +11,7 @@ import net.minecraftforge.eventbus.api.SubscribeEvent;
 import net.minecraftforge.fml.common.Mod;
 import net.minecraftforge.fml.event.config.ModConfigEvent;
 
+import java.awt.*;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -21,6 +22,9 @@ import java.util.Map;
 public class ShowKeyConfig {
     public static final String OFF_HAND_ITEM = ".Bound off hand items";
     public static final String HIDE = ".Hide";
+    public static final String CUS_POS = ".custom position";
+    public static final String COO = ".coordinate";
+    public static final String CON_DIS = ".condition display";
     public static final String EQUIPMENTS = ".Bound equipments";
     public static final String VEHICLES = ".Bound vehicles";
     public static final String SCREENS = ".Bound screens";
@@ -59,6 +63,7 @@ public class ShowKeyConfig {
         keyMappingWhiteList = KEYMAPPING_WHITE_LIST.get();
     }
 
+    @SuppressWarnings("resource")
     public static void initKeyConfig() {
         File file = new File(String.valueOf(ShowKey.CONFIG_PATCH));
         if (!file.exists()) {
@@ -80,6 +85,10 @@ public class ShowKeyConfig {
                     String a = Component.translatable(keyMapping.getName()).getString().replace(".", " ");
                     keyValuePaths.put(keyMapping.getName(), a);
                     keyConfig.Add(a + HIDE, KeyInfoHelper.defaultDisplayValue(keyMapping), "Hide \"" + a + "\" ?");
+                    keyConfig.Add(a + CUS_POS, false, "Enable custom position?");
+                    keyConfig.Add(a + COO+".x", 0, "X offset");
+                    keyConfig.Add(a + COO+".y", 0, "Y offset");
+                    keyConfig.Add(a + CON_DIS, false, "Enable condition display?");
                     List<String> o = new ArrayList<>();
                     o.add("example0");
                     o.add("example1");
@@ -100,12 +109,31 @@ public class ShowKeyConfig {
         KeyMapping[] keyMappings = Minecraft.getInstance().options.keyMappings;
         for (KeyMapping keyMapping : keyMappings) {
             String name = keyMapping.getName();
-            if (keyValuePaths.containsKey(name)) {
+            if (!keyValuePaths.isEmpty()&&keyValuePaths.containsKey(name)) {
                 String path = keyValuePaths.get(name);
                 ShowKeyCondition condition = new ShowKeyCondition();
                 KeyConfig.Value<?> flag = KeyConfig.getValue(ShowKey.CONFIG_PATCH, keyMapping.getCategory(), path + HIDE);
                 if (flag != null) {
                     condition.hide = (boolean) flag.get();
+                }
+                KeyConfig.Value<?> flag1 = KeyConfig.getValue(ShowKey.CONFIG_PATCH, keyMapping.getCategory(), path + CUS_POS);
+                if (flag1 != null) {
+                    condition.customPosition = (boolean) flag1.get();
+                }
+                if(condition.coordinate == null){
+                    condition.coordinate = new Point(0,0);
+                }
+                KeyConfig.Value<?> pointX = KeyConfig.getValue(ShowKey.CONFIG_PATCH, keyMapping.getCategory(), path + COO +".x");
+                if (pointX != null) {
+                    condition.coordinate.x = (int) pointX.get();
+                }
+                KeyConfig.Value<?> pointY = KeyConfig.getValue(ShowKey.CONFIG_PATCH, keyMapping.getCategory(), path + COO +".y");
+                if (pointY != null) {
+                    condition.coordinate.y = (int) pointY.get();
+                }
+                KeyConfig.Value<?> flag2 = KeyConfig.getValue(ShowKey.CONFIG_PATCH, keyMapping.getCategory(), path + CON_DIS);
+                if (flag2 != null) {
+                    condition.conditionDisplay = (boolean) flag2.get();
                 }
                 KeyConfig.Value<?> main = KeyConfig.getValue(ShowKey.CONFIG_PATCH, keyMapping.getCategory(), path + MAIN_HAND_ITEM);
                 if (main != null && main.get() instanceof List<?> a) {
@@ -118,36 +146,35 @@ public class ShowKeyConfig {
                 KeyConfig.Value<?> off = KeyConfig.getValue(ShowKey.CONFIG_PATCH, keyMapping.getCategory(), path + OFF_HAND_ITEM);
                 if (off != null && off.get() instanceof List<?> a) {
                     a.forEach(b -> {
-                        if (b instanceof String c && !condition.boundMainHandItem.contains(c)) {
-                            condition.boundMainHandItem.add(c);
+                        if (b instanceof String c && !condition.boundOffHandItem.contains(c)) {
+                            condition.boundOffHandItem.add(c);
                         }
                     });
                 }
                 KeyConfig.Value<?> equip = KeyConfig.getValue(ShowKey.CONFIG_PATCH, keyMapping.getCategory(), path + EQUIPMENTS);
                 if (equip != null && equip.get() instanceof List<?> a) {
                     a.forEach(b -> {
-                        if (b instanceof String c && !condition.boundMainHandItem.contains(c)) {
-                            condition.boundMainHandItem.add(c);
+                        if (b instanceof String c && !condition.boundEquipment.contains(c)) {
+                            condition.boundEquipment.add(c);
                         }
                     });
                 }
                 KeyConfig.Value<?> vehicle = KeyConfig.getValue(ShowKey.CONFIG_PATCH, keyMapping.getCategory(), path + VEHICLES);
                 if (vehicle != null && vehicle.get() instanceof List<?> a) {
                     a.forEach(b -> {
-                        if (b instanceof String c && !condition.boundMainHandItem.contains(c)) {
-                            condition.boundMainHandItem.add(c);
+                        if (b instanceof String c && !condition.boundVehicle.contains(c)) {
+                            condition.boundVehicle.add(c);
                         }
                     });
                 }
                 KeyConfig.Value<?> screen = KeyConfig.getValue(ShowKey.CONFIG_PATCH, keyMapping.getCategory(), path + SCREENS);
                 if (screen != null && screen.get() instanceof List<?> a) {
                     a.forEach(b -> {
-                        if (b instanceof String c && !condition.boundMainHandItem.contains(c)) {
-                            condition.boundMainHandItem.add(c);
+                        if (b instanceof String c && !condition.boundScreens.contains(c)) {
+                            condition.boundScreens.add(c);
                         }
                     });
                 }
-
                 KeyInfoHelper.KEY_DISPLAY_RULE.put(name, condition);
             }
         }
