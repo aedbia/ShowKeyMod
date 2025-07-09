@@ -11,7 +11,7 @@ import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.*;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.client.event.RegisterClientCommandsEvent;
+import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import org.slf4j.Logger;
 
 import java.util.ArrayList;
@@ -31,7 +31,6 @@ public class ShowKeyCommandThread extends Thread {
         super("ShowKeyCommandThread");
     }
 
-    @SuppressWarnings("resource")
     public static void listHoldItem() {
         if (Minecraft.getInstance().player != null) {
             LocalPlayer player = Minecraft.getInstance().player;
@@ -52,7 +51,6 @@ public class ShowKeyCommandThread extends Thread {
         }
     }
 
-    @SuppressWarnings("resource")
     public static void listEquipItem() {
         if (Minecraft.getInstance().player != null) {
             LocalPlayer player = Minecraft.getInstance().player;
@@ -88,7 +86,6 @@ public class ShowKeyCommandThread extends Thread {
         }
     }
 
-    @SuppressWarnings("resource")
     public static void listRideVehicle() {
         if (Minecraft.getInstance().player != null) {
             LocalPlayer player = Minecraft.getInstance().player;
@@ -98,7 +95,7 @@ public class ShowKeyCommandThread extends Thread {
             } else {
                 ride = "null";
             }
-            String a = Component.translatable("commands.ride.already_riding").getString().replace("%s", "")+":";
+            String a = Component.translatable("commands.ride.already_riding").getString().replace("%s", "") + ":";
             Minecraft.getInstance().gui.getChat().addMessage(getCopyComponent(a, ride));
         }
     }
@@ -113,7 +110,6 @@ public class ShowKeyCommandThread extends Thread {
         }
     }
 
-    @SuppressWarnings("resource")
     public static void registerCommands(RegisterClientCommandsEvent event) {
         LiteralArgumentBuilder<CommandSourceStack> commands = Commands.literal(ShowKey.MODID).requires(a -> a.hasPermission(2));
         event.getDispatcher()
@@ -125,12 +121,12 @@ public class ShowKeyCommandThread extends Thread {
                                 thread.getAllScreen = false;
                                 Minecraft.getInstance().gui.getChat().addMessage(Component.translatable("monitor_keys_start"));
                                 thread.start();
-                            }else {
-                                if(!thread.getAllScreen){
+                            } else {
+                                if (!thread.getAllScreen) {
                                     thread.stop = true;
                                     thread = null;
                                     Minecraft.getInstance().gui.getChat().addMessage(Component.translatable("monitor_keys_stop"));
-                                }else {
+                                } else {
                                     thread.getAllScreen = false;
                                     Minecraft.getInstance().gui.getChat().addMessage(Component.translatable("monitor_screen_stop"));
                                     Minecraft.getInstance().gui.getChat().addMessage(Component.translatable("monitor_keys_start"));
@@ -147,12 +143,12 @@ public class ShowKeyCommandThread extends Thread {
                                 thread.getAllScreen = true;
                                 Minecraft.getInstance().gui.getChat().addMessage(Component.translatable("monitor_screen_start"));
                                 thread.start();
-                            }else {
-                                if(thread.getAllScreen){
+                            } else {
+                                if (thread.getAllScreen) {
                                     thread.stop = true;
                                     thread = null;
                                     Minecraft.getInstance().gui.getChat().addMessage(Component.translatable("monitor_screen_stop"));
-                                }else {
+                                } else {
                                     thread.getAllScreen = true;
                                     Minecraft.getInstance().gui.getChat().addMessage(Component.translatable("monitor_keys_stop"));
                                     Minecraft.getInstance().gui.getChat().addMessage(Component.translatable("monitor_screen_start"));
@@ -180,22 +176,21 @@ public class ShowKeyCommandThread extends Thread {
                         }))));
     }
 
-    @SuppressWarnings("resource")
     @Override
     public void run() {
         LOGGER.debug("ShowKeyCommandThread" + " start!");
         while (!stop && Minecraft.getInstance().isRunning()) {
             //this.wait(1);
-            if(!getAllScreen){
-            for (KeyMapping keyMapping : Minecraft.getInstance().options.keyMappings) {
-                if (keyMapping.isDown()) {
-                    if (!this.keyMapping.contains(keyMapping) && Minecraft.getInstance().player != null) {
-                        this.keyMapping.add(keyMapping);
-                        Minecraft.getInstance().gui.getChat().addMessage(getCopyComponent("", keyMapping.getName()));
-                    }
-                } else this.keyMapping.remove(keyMapping);
-            }
-            }else {
+            if (!getAllScreen) {
+                for (KeyMapping keyMapping : Minecraft.getInstance().options.keyMappings) {
+                    if (keyMapping.isDown()) {
+                        if (!this.keyMapping.contains(keyMapping) && Minecraft.getInstance().player != null) {
+                            this.keyMapping.add(keyMapping);
+                            Minecraft.getInstance().gui.getChat().addMessage(getCopyComponent("", keyMapping.getName()));
+                        }
+                    } else this.keyMapping.remove(keyMapping);
+                }
+            } else {
                 if (InputConstants.isKeyDown(Minecraft.getInstance().getWindow().getWindow(), 345)) {
                     String a;
                     if (Minecraft.getInstance().screen == null) {

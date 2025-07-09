@@ -23,17 +23,20 @@ public class ShowKeyCondition {
     public List<String> boundVehicle = new ArrayList<>();
     public List<String> boundScreens = new ArrayList<>();
     public List<Supplier<Boolean>> OtherConditions = new ArrayList<>();
+    public boolean hideName = false;
+    public boolean drawRight = false;
+    public double size = 1.0f;
 
     public boolean isActive() {
         if (hide) {
             return false;
         }
-        if(!conditionDisplay){
+        if (!conditionDisplay) {
             return true;
         }
         Minecraft mc = Minecraft.getInstance();
         boolean a;
-        if (empty(boundScreens)) {
+        if (boundScreens.isEmpty()) {
             a = true;
         } else {
             if (mc.screen == null) {
@@ -49,7 +52,7 @@ public class ShowKeyCondition {
 
             LocalPlayer player = mc.player;
             boolean b;
-            if (empty(boundMainHandItem)) {
+            if (boundMainHandItem.isEmpty()) {
                 b = true;
             } else {
                 ItemStack stack = player.getItemInHand(InteractionHand.MAIN_HAND);
@@ -63,7 +66,7 @@ public class ShowKeyCondition {
                 return false;
             }
             boolean c;
-            if (empty(boundOffHandItem)) {
+            if (boundOffHandItem.isEmpty()) {
                 c = true;
             } else {
                 ItemStack stack = player.getItemInHand(InteractionHand.OFF_HAND);
@@ -77,7 +80,7 @@ public class ShowKeyCondition {
                 return false;
             }
             boolean d;
-            if (empty(boundEquipment)) {
+            if (boundEquipment.isEmpty()) {
                 d = true;
             } else {
                 List<ItemStack> stacks = new ArrayList<>();
@@ -96,7 +99,7 @@ public class ShowKeyCondition {
                 return false;
             }
             boolean e;
-            if (empty(boundVehicle)) {
+            if (boundVehicle.isEmpty()) {
                 e = true;
             } else {
                 Entity vehicle = player.getVehicle();
@@ -120,8 +123,8 @@ public class ShowKeyCondition {
         return false;
     }
 
-    private boolean empty(List<String> list) {
-        List<String> list1 = list.stream().filter(a -> !a.contains("example")).toList();
-        return list1.isEmpty();
-    }
+//    private boolean empty(List<String> list) {
+//        List<String> list1 = list.stream().filter(a -> !a.contains("example")).toList();
+//        return list1.isEmpty();
+//    }
 }

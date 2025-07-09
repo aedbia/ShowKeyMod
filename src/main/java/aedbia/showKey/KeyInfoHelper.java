@@ -2,14 +2,12 @@ package aedbia.showKey;
 
 import aedbia.showKey.client.ShowKeyCondition;
 import aedbia.showKey.client.gui.ShowKeyGui;
-import aedbia.showKey.compatible.keybindsGalore.KeybindsGaloreCompatible;
-import aedbia.showKey.configs.KeyConfig;
 import aedbia.showKey.configs.ShowKeyConfig;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.KeyMapping;
-import net.minecraftforge.client.event.RegisterGuiOverlaysEvent;
-import net.minecraftforge.client.gui.overlay.VanillaGuiOverlay;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.neoforge.client.event.RegisterGuiLayersEvent;
+import net.neoforged.neoforge.client.gui.VanillaGuiLayers;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -61,6 +59,8 @@ public class KeyInfoHelper {
 
 
             };
+    public static Map<String, String> keyNames = new HashMap<>();
+    public static Map<String, String> categoryNames = new HashMap<>();
     public static Map<String, ShowKeyCondition> KEY_DISPLAY_RULE = new HashMap<>();
     private static ScheduledFuture<?> future = null;
     private static boolean load = false;
@@ -76,12 +76,8 @@ public class KeyInfoHelper {
         if (keyMapping.isUnbound()) {
             return false;
         } else {
-            List<String> list = ShowKeyConfig.keyMappingWhiteList.stream().filter(a -> !a.contains("example")).toList();
-            if(list.isEmpty()||list.contains(keyMapping.getName())) {
-                if (KeybindsGaloreCompatible.keybindsGaloreBoundKeyList.containsKey(keyMapping.getKey())
-                        && KeybindsGaloreCompatible.keybindsGaloreBoundKeyList.get(keyMapping.getKey()) != keyMapping) {
-                    return false;
-                }
+            List<String> list = ShowKeyConfig.keyMappingWhiteList;
+            if (list.isEmpty() || list.contains(keyMapping.getName())) {
                 String name = keyMapping.getName();
                 if (KEY_DISPLAY_RULE.containsKey(name)) {
                     ShowKeyCondition condition = KEY_DISPLAY_RULE.get(name);
@@ -89,19 +85,18 @@ public class KeyInfoHelper {
                 } else {
                     return false;
                 }
-            }else {
+            } else {
                 return false;
             }
         }
     }
+
 
     private static void modTick() {
         gui.tick();
         if (gui.onRender) {
             gui.onRender = false;
             if (!load) {
-                KeyConfig.loadAll();
-                ShowKeyConfig.loadKeyConfigData();
                 load = true;
             }
         } else {
@@ -116,7 +111,7 @@ public class KeyInfoHelper {
     }
 
     @SubscribeEvent
-    public void onRenderBar(RegisterGuiOverlaysEvent event) {
-        event.registerBelow(VanillaGuiOverlay.HOTBAR.id(), gui.id(), gui);
+    public void onRenderBar(RegisterGuiLayersEvent event) {
+        event.registerBelow(VanillaGuiLayers.HOTBAR, gui.id(), gui);
     }
 }

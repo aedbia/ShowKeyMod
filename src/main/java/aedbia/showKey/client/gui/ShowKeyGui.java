@@ -1,133 +1,230 @@
 package aedbia.showKey.client.gui;
 
+
 import aedbia.showKey.KeyInfoHelper;
 import aedbia.showKey.ShowKey;
-import aedbia.showKey.compatible.keybindsGalore.KeybindsGaloreCompatible;
+import aedbia.showKey.client.ShowKeyCondition;
 import aedbia.showKey.configs.ShowKeyConfig;
+import com.mojang.blaze3d.systems.RenderSystem;
+import net.minecraft.client.DeltaTracker;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.LayeredDraw;
+import net.minecraft.client.gui.components.StringWidget;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.client.gui.overlay.ForgeGui;
-import net.minecraftforge.client.gui.overlay.IGuiOverlay;
-import net.minecraftforge.client.settings.KeyModifier;
+import net.minecraft.util.FastColor;
+import net.neoforged.neoforge.client.settings.KeyModifier;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Comparator;
-import java.util.List;
-import java.util.function.Function;
+import java.util.*;
 import java.util.stream.Collectors;
 
-public class ShowKeyGui implements IGuiOverlay {
+public class ShowKeyGui implements LayeredDraw.Layer {
 
-    private static final ResourceLocation button_down = new ResourceLocation(ShowKey.MODID, "textures/gui/button_down.png");
-    private static final ResourceLocation button_release = new ResourceLocation(ShowKey.MODID, "textures/gui/button_release.png");
+    private static final int colorDarkGray = FastColor.ARGB32.color(150, 105, 105, 105);
+    private static final int colorWhite = FastColor.ARGB32.color(150, 255, 255, 255);
     private final Minecraft mc = Minecraft.getInstance();
-    private final String id;
+    private final ResourceLocation id = ResourceLocation.fromNamespaceAndPath(ShowKey.MODID, "key");
     public boolean onRender = false;
-    private List<KeyMapping> displayKeyMappings = new ArrayList<>();
     private List<KeyMapping> modifierMappings = new ArrayList<>();
-    private int activeKeyCount = 10;
-
-    private int showCount = 7;
+    private List<KeyMapping> displayKeyMappings = new ArrayList<>();
+    private int showCount = 0;
 
     public ShowKeyGui() {
-        this.id = "keys";
+
     }
 
-    @SuppressWarnings("unused")
-    @Override
-    public void render(ForgeGui gui, GuiGraphics guiGraphics, float partialTick, int screenWidth, int screenHeight) {
-        onRender = true;
-        double scale = ShowKeyConfig.UIScaleNumber;
-        int mode = ShowKeyConfig.displayMode;
-        if (scale < 0.1) {
-            scale = 0.5;
+    private void RenderAllKeys(GuiGraphics guiGraphics, float width, float height) {
+        int bbb = ShowKeyConfig.displayCount;
+        int hd = mc.font.lineHeight + 2;
+        int displayCount = 0;
+        int startX = 1;
+        int startY = (int) height - 1;
+        int modifier = 0;
+        int r = 10;
+        if (ShowKeyConfig.displayMode == 0 && showCount != 0) {
+            r = showCount / 2;
         }
-        double x = 0;
-        double wight = (double) screenWidth / 8;
-        double height = (double) screenHeight / (3 * scale);
-        int count = 0;
-        double y = (screenHeight / scale - height / showCount);
-        boolean right = false;
-        guiGraphics.pose().scale((float) scale, (float) scale, 1f);
         for (KeyMapping keyMapping : modifierMappings) {
-            if (count >= 2 * showCount || (mode != 0 && count >= showCount)) {
-                break;
+            ShowKeyCondition condition = null;
+            if (KeyInfoHelper.KEY_DISPLAY_RULE.containsKey(keyMapping.getName())) {
+                condition = KeyInfoHelper.KEY_DISPLAY_RULE.get(keyMapping.getName());
             }
-            if ((mode == 0 && activeKeyCount / 2 >= 1 && count == activeKeyCount / 2) || (mode == 1 && count == 0)) {
-                x = screenWidth / scale - wight;
-                y = (screenHeight / scale - height / showCount);
-                right = true;
-            }
-            if (keyMapping.getKeyConflictContext().isActive() && keyMapping.getKeyModifier().isActive(keyMapping.getKeyConflictContext())) {
-                renderKeyInfo(guiGraphics, keyMapping, x, y, wight, height / showCount, right);
-                y -= (height / showCount);
-                count++;
+            if (keyMapping.getKeyModifier().isActive(keyMapping.getKeyConflictContext())) {
+                if (condition == null || !condition.customPosition) {
+                    if (displayCount > bbb) {
+                        continue;
+                    }
+                    boolean br = ShowKeyConfig.displayMode == 0;
+                    renderKeyInfo(guiGraphics, keyMapping, startX, startY, true, br && displayCount > r);
+                    startY -= hd;
+                    if (startY >= height || (br && displayCount == r)) {
+                        startY = (int) height - 1;
+                        startX = (int) width - 1;
+                    }
+                    modifier++;
+                    displayCount++;
+                } else {
+                    float size = (float) condition.size;
+                    if (size <= 0) {
+                        size = 1;
+                    }
+                    guiGraphics.pose().pushPose();
+                    guiGraphics.pose().scale(size, size, 1);
+                    renderKeyInfo(guiGraphics, keyMapping, condition.coordinate.x, condition.coordinate.y, !condition.hideName, condition.drawRight);
+                    guiGraphics.pose().popPose();
+                }
+
             }
         }
-        if (count == 0) {
+        if (modifier == 0) {
             for (KeyMapping keyMapping : displayKeyMappings) {
-                if (count >= 2 * showCount || (mode != 0 && count >= showCount)) {
-                    break;
+
+                ShowKeyCondition condition = null;
+                if (KeyInfoHelper.KEY_DISPLAY_RULE.containsKey(keyMapping.getName())) {
+                    condition = KeyInfoHelper.KEY_DISPLAY_RULE.get(keyMapping.getName());
                 }
-                if ((mode == 0 && activeKeyCount / 2 >= 1 && count == activeKeyCount / 2) || (mode == 1 && count == 0)) {
-                    x = screenWidth / scale - wight;
-                    y = (screenHeight / scale - height / showCount);
-                    right = true;
-                }
-                if (keyMapping.getKeyConflictContext().isActive()) {
-                    renderKeyInfo(guiGraphics, keyMapping, x, y, wight, height / showCount, right);
-                    y -= (height / showCount);
-                    count++;
+                if (condition == null || !condition.customPosition) {
+                    if (displayCount > bbb) {
+                        continue;
+                    }
+                    boolean br = ShowKeyConfig.displayMode == 0;
+                    renderKeyInfo(guiGraphics, keyMapping, startX, startY, true, br && displayCount > r);
+                    startY -= hd;
+                    if (startY >= height || (br && displayCount == r)) {
+                        startY = (int) height - 1;
+                        startX = (int) width - 1;
+                    }
+                    displayCount++;
+                } else {
+                    float size = (float) condition.size;
+                    if (size <= 0) {
+                        size = 1;
+                    }
+                    guiGraphics.pose().pushPose();
+                    guiGraphics.pose().scale(size, size, 1);
+                    renderKeyInfo(guiGraphics, keyMapping, (int) (condition.coordinate.x / size), (int) (condition.coordinate.y / size), !condition.hideName, condition.drawRight);
+                    guiGraphics.pose().popPose();
                 }
             }
         }
-        activeKeyCount = count;
-        guiGraphics.pose().scale((1 / (float) scale), (1 / (float) scale), 1f);
-    }
-
-    public void renderKeyInfo(GuiGraphics guiGraphics, KeyMapping keyMapping, double x, double y, double wight, double height, boolean right) {
-        String key = keyMapping.getKey().getDisplayName().getString().replaceFirst("key.keyboard.", "");
-        if (key.length() <= 1) {
-            key = key.toUpperCase();
+        showCount = displayCount;
+        if (showCount > bbb) {
+            showCount = bbb;
         }
-        boolean isKeyDown = keyMapping.isDown();
-        int color = isKeyDown ? 0x808080 : 0xFFFFFF;
-        String keyName = Component.translatable(keyMapping.getName()).getString();
-        int keyLoc = (int) (right ? (x + wight * 3 / 4) : (x + wight / 4));
-        int texLoc = (int) (right ? (x + wight / 2) : x);
-        int keyNameLoc = (int) (right ? (x - mc.font.width(keyName) + wight / 2) : (x + wight / 2));
-        guiGraphics.blit(isKeyDown ? button_down : button_release, texLoc, (int) y, 0, 0, (int) (wight / 2) - 2, (int) height - 2, (int) (wight / 2) - 2, (int) height - 2);
-        guiGraphics.drawCenteredString(mc.font, key, keyLoc, (int) y, color);
-        guiGraphics.drawString(mc.font, keyName, keyNameLoc, (int) y, color);
+    }
+
+
+    private void renderKeyInfo(GuiGraphics guiGraphics, KeyMapping keyMapping, int x, int y, boolean ShowString, boolean right) {
+
+        try {
+            String kId = keyMapping.getName();
+            if (KeyGuiData.getKeyGuiData(kId) == null) {
+                new KeyGuiData(keyMapping);
+            }
+            var data = KeyGuiData.getKeyGuiData(kId);
+            if (data != null) {
+                String key = data.getKey();
+                int fw;
+                int fh = y + mc.font.lineHeight + 1;
+                if (right) {
+                    fw = x;
+                    x = x - mc.font.width(key) - 2;
+                } else {
+                    fw = x + mc.font.width(key) + 2;
+                }
+                int x1 = x + 1;
+                int y1 = y + 1;
+                boolean isKeyDown = keyMapping.isDown();
+                int color0 = isKeyDown ? 0x696969 : 0xFFFFFF;
+                int color1 = isKeyDown ? colorWhite : colorDarkGray;
+                guiGraphics.fill(x, y, fw, fh, color1);
+                guiGraphics.drawString(mc.font, key, x1, y1, color0);
+
+                String keyName = data.getName();
+                if (!ShowString) {
+                    return;
+                }
+                int x2;
+                if (right) {
+                    x2 = x1 - mc.font.width(keyName) - 2;
+                } else {
+                    x2 = fw + 1;
+                }
+                StringWidget sw = new StringWidget(fw - x2, fh - y1, Component.literal(keyName), mc.font);
+                guiGraphics.drawString(mc.font, keyName, x2, y1, color0);
+            }
+        } catch (Exception ignored) {
+
+        }
 
     }
 
-    public String id() {
+    public ResourceLocation id() {
         return this.id;
     }
 
     public void tick() {
-        double scale = ShowKeyConfig.UIScaleNumber;
-        showCount = (int) (7 / scale);
-        KeybindsGaloreCompatible.receiveIMCMessage();
-        List<KeyMapping> list = Arrays.stream(mc.options.keyMappings).filter(KeyInfoHelper::isShowKeyMapping).collect(Collectors.toMap(KeyMapping::getKey, Function.identity(), (a, b) -> a)).values().stream().toList();
-        List<KeyMapping> modifier = list.stream()
-                .filter(a -> a.getKeyModifier() != KeyModifier.NONE).sorted(Comparator.comparingInt(a -> -a.getKey().getValue())).toList();
-        if (modifier.size() > showCount) {
-            modifierMappings = modifier.subList(modifier.size() - showCount, modifier.size());
-        } else {
-            modifierMappings = modifier;
-        }
-        List<KeyMapping> noModifier = list.stream()
+        Set<KeyMapping> list = Arrays.stream(Minecraft.getInstance().options.keyMappings).filter(KeyInfoHelper::isShowKeyMapping).collect(Collectors.toSet());
+
+        modifierMappings = list.stream()
+                .filter(a1 -> a1.getKeyModifier() != KeyModifier.NONE).sorted(Comparator.comparingInt(a1 -> -a1.getKey().getValue())).toList();
+
+        displayKeyMappings = list.stream()
                 .filter(a -> a.getKeyModifier() == KeyModifier.NONE).sorted(Comparator.comparingInt(a -> -a.getKey().getValue())).toList();
-        if (noModifier.size() > showCount) {
-            displayKeyMappings = noModifier.subList(noModifier.size() - showCount, noModifier.size());
-        } else {
-            displayKeyMappings = noModifier;
+
+    }
+
+    @Override
+    @SuppressWarnings({"NullableProblems"})
+    public void render(GuiGraphics guiGraphics, DeltaTracker deltaTracker) {
+        onRender = true;
+        guiGraphics.pose().pushPose();
+        RenderSystem.enableBlend();
+        float scaleNum = (float) ShowKeyConfig.UIScaleNumber;
+        guiGraphics.pose().scale(scaleNum, scaleNum, 1);
+        float height = guiGraphics.guiHeight();
+        float width = guiGraphics.guiWidth();
+        RenderAllKeys(guiGraphics, width / scaleNum, height / scaleNum);
+        //guiGraphics.flush();
+        RenderSystem.disableBlend();
+        guiGraphics.pose().popPose();
+
+    }
+
+    private static class KeyGuiData {
+        private static Map<String, KeyGuiData> AllKeyGuiData = new Hashtable<>();
+        String ID;
+        String key;
+        String name;
+
+        public KeyGuiData(KeyMapping keyMapping) {
+            ID = keyMapping.getName();
+            key = Component.keybind(keyMapping.getKey().getName()).getString().replaceFirst("key.keyboard.", "");
+            if (key.length() <= 1) {
+                key = key.toUpperCase();
+            }
+            name = Component.translatable(keyMapping.getName()).getString();
+            if (AllKeyGuiData == null) {
+                AllKeyGuiData = new Hashtable<>();
+            }
+            AllKeyGuiData.put(ID, this);
+        }
+
+        public static KeyGuiData getKeyGuiData(String ID) {
+            if (AllKeyGuiData == null || AllKeyGuiData.isEmpty() || !AllKeyGuiData.containsKey(ID)) {
+                return null;
+            }
+            return AllKeyGuiData.get(ID);
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getKey() {
+            return key;
         }
     }
 }

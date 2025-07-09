@@ -1,39 +1,41 @@
 package aedbia.showKey;
 
 import aedbia.showKey.client.ShowKeyCommandThread;
+import aedbia.showKey.client.screen.ShowkeyConfigScreen;
 import aedbia.showKey.configs.ShowKeyConfig;
 import com.mojang.logging.LogUtils;
-import net.minecraft.client.Minecraft;
-import net.minecraft.resources.ResourceLocation;
-import net.minecraftforge.api.distmarker.Dist;
-import net.minecraftforge.client.event.RegisterClientCommandsEvent;
-import net.minecraftforge.common.MinecraftForge;
-import net.minecraftforge.eventbus.api.IEventBus;
-import net.minecraftforge.eventbus.api.SubscribeEvent;
-import net.minecraftforge.fml.ModLoadingContext;
-import net.minecraftforge.fml.common.Mod;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.event.lifecycle.FMLClientSetupEvent;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
-import net.minecraftforge.fml.loading.FMLPaths;
+import net.neoforged.api.distmarker.Dist;
+import net.neoforged.bus.api.IEventBus;
+import net.neoforged.bus.api.SubscribeEvent;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.common.EventBusSubscriber;
+import net.neoforged.fml.common.Mod;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
+import net.neoforged.fml.loading.FMLPaths;
+import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
+import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
+import net.neoforged.neoforge.common.NeoForge;
 import org.slf4j.Logger;
 
 import java.nio.file.Path;
 
-@Mod(ShowKey.MODID)
+@Mod(value = ShowKey.MODID, dist = Dist.CLIENT)
 public class ShowKey {
     public static final String MODID = "show_key";
 
     public static final Logger LOGGER = LogUtils.getLogger();
 
     public static final Path CONFIG_PATCH = FMLPaths.CONFIGDIR.get().resolve(MODID);
+    private static ModContainer showKey = null;
 
-    public ShowKey() {
-        IEventBus modEventBus = FMLJavaModLoadingContext.get().getModEventBus();
-        MinecraftForge.EVENT_BUS.register(this);
-        ModLoadingContext.get().registerConfig(ModConfig.Type.CLIENT, ShowKeyConfig.SPEC);
+    public ShowKey(IEventBus modEventBus, ModContainer modContainer) {
+        showKey = modContainer;
+        NeoForge.EVENT_BUS.register(this);
         modEventBus.register(new KeyInfoHelper());
-        Minecraft.getInstance().getResourceManager().getResource(new ResourceLocation(""));
+        modContainer.registerConfig(ModConfig.Type.CLIENT, ShowKeyConfig.SPEC);
+        //modContainer.registerExtensionPoint(IConfigScreenFactory.class, TestScreen::new);
+        modContainer.registerExtensionPoint(IConfigScreenFactory.class, ShowkeyConfigScreen::new);
     }
 
     @SubscribeEvent
@@ -41,11 +43,16 @@ public class ShowKey {
         ShowKeyCommandThread.registerCommands(event);
     }
 
-    @Mod.EventBusSubscriber(modid = MODID, bus = Mod.EventBusSubscriber.Bus.MOD, value = Dist.CLIENT)
+    @EventBusSubscriber(modid = MODID, value = Dist.CLIENT)
     public static class ClientModEvents {
         @SubscribeEvent
         public static void onClientSetup(FMLClientSetupEvent event) {
-            ShowKeyConfig.initKeyConfig();
+            if (showKey != null) {
+                ShowKeyConfig.RegisterConfig(showKey);
+                //ShowKeyConfig.initKeyConfig();
+                ShowKeyConfig.load();
+                ShowKeyConfig.canLoad = true;
+            }
             KeyInfoHelper.start();
         }
     }
