@@ -1,4 +1,4 @@
-package aedbia.showKey.client.screen;
+package aedbia.showKey.screen;
 
 import aedbia.showKey.KeyInfoHelper;
 import aedbia.showKey.ShowKey;

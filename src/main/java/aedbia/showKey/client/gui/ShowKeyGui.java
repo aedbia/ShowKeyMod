@@ -31,19 +31,23 @@ public class ShowKeyGui implements LayeredDraw.Layer {
     private List<KeyMapping> displayKeyMappings = new ArrayList<>();
     private int showCount = 0;
 
-    public ShowKeyGui() {
-
-    }
-
     private void RenderAllKeys(GuiGraphics guiGraphics, float width, float height) {
-        int bbb = ShowKeyConfig.displayCount;
+        boolean br = ShowKeyConfig.displayMode == 1;
+        boolean bb = ShowKeyConfig.displayMode == 0;
+        int disc = ShowKeyConfig.displayCount;
         int hd = mc.font.lineHeight + 2;
         int displayCount = 0;
         int x = 1;
-        int startY= (int) height - mc.font.lineHeight - 2;
+        int startX = (int) width - 1;
+        if(br){
+            x = startX;
+            startX =1;
+        }
+        int startY = (int) height - mc.font.lineHeight - 2;
         int y = startY;
         int modifier = 0;
         int r = 10;
+
         if (ShowKeyConfig.displayMode == 0 && showCount != 0) {
             r = showCount / 2;
         }
@@ -54,15 +58,16 @@ public class ShowKeyGui implements LayeredDraw.Layer {
             }
             if (keyMapping.getKeyModifier().isActive(keyMapping.getKeyConflictContext())) {
                 if (condition == null || !condition.customPosition) {
-                    if (displayCount > bbb) {
+                    if (displayCount > disc) {
                         continue;
                     }
-                    boolean br = ShowKeyConfig.displayMode == 0;
-                    renderKeyInfo(guiGraphics, keyMapping, x, y, true, br && displayCount > r);
+
+
+                    renderKeyInfo(guiGraphics, keyMapping, x, y, true, bb && displayCount > r||br);
                     y -= hd;
-                    if (y >= height || (br && displayCount == r)) {
+                    if (y >= height || (bb && displayCount == r)) {
                         y = startY;
-                        x = (int) width - 1;
+                        x = startX;
                     }
                     modifier++;
                     displayCount++;
@@ -87,15 +92,14 @@ public class ShowKeyGui implements LayeredDraw.Layer {
                     condition = KeyInfoHelper.KEY_DISPLAY_RULE.get(keyMapping.getName());
                 }
                 if (condition == null || !condition.customPosition) {
-                    if (displayCount > bbb) {
+                    if (displayCount > disc) {
                         continue;
                     }
-                    boolean br = ShowKeyConfig.displayMode == 0;
-                    renderKeyInfo(guiGraphics, keyMapping, x, y, true, br && displayCount > r);
+                    renderKeyInfo(guiGraphics, keyMapping, x, y, true, displayCount > r||br);
                     y -= hd;
-                    if (y >= height || (br && displayCount == r)) {
+                    if (y >= height || (bb && displayCount == r)) {
                         y = startY;
-                        x = (int) width - 1;
+                        x = startX;
                     }
                     displayCount++;
                 } else {
@@ -111,8 +115,8 @@ public class ShowKeyGui implements LayeredDraw.Layer {
             }
         }
         showCount = displayCount;
-        if (showCount > bbb) {
-            showCount = bbb;
+        if (showCount > disc) {
+            showCount = disc;
         }
     }
 

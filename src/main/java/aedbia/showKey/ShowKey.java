@@ -1,7 +1,7 @@
 package aedbia.showKey;
 
 import aedbia.showKey.client.ShowKeyCommandThread;
-import aedbia.showKey.client.screen.ShowkeyConfigScreen;
+import aedbia.showKey.screen.ShowkeyConfigScreen;
 import aedbia.showKey.configs.ShowKeyConfig;
 import com.mojang.logging.LogUtils;
 import net.neoforged.api.distmarker.Dist;
@@ -12,13 +12,10 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.fml.common.Mod;
 import net.neoforged.fml.config.ModConfig;
 import net.neoforged.fml.event.lifecycle.FMLClientSetupEvent;
-import net.neoforged.fml.loading.FMLPaths;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import net.neoforged.neoforge.client.gui.IConfigScreenFactory;
 import net.neoforged.neoforge.common.NeoForge;
 import org.slf4j.Logger;
-
-import java.nio.file.Path;
 
 @Mod(value = ShowKey.MODID, dist = Dist.CLIENT)
 public class ShowKey {
@@ -26,7 +23,6 @@ public class ShowKey {
 
     public static final Logger LOGGER = LogUtils.getLogger();
 
-    public static final Path CONFIG_PATCH = FMLPaths.CONFIGDIR.get().resolve(MODID);
     private static ModContainer showKey = null;
 
     public ShowKey(IEventBus modEventBus, ModContainer modContainer) {
