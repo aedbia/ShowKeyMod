@@ -39,8 +39,9 @@ public class ShowKeyGui implements LayeredDraw.Layer {
         int bbb = ShowKeyConfig.displayCount;
         int hd = mc.font.lineHeight + 2;
         int displayCount = 0;
-        int startX = 1;
-        int startY = (int) height - 1;
+        int x = 1;
+        int startY= (int) height - mc.font.lineHeight - 2;
+        int y = startY;
         int modifier = 0;
         int r = 10;
         if (ShowKeyConfig.displayMode == 0 && showCount != 0) {
@@ -57,11 +58,11 @@ public class ShowKeyGui implements LayeredDraw.Layer {
                         continue;
                     }
                     boolean br = ShowKeyConfig.displayMode == 0;
-                    renderKeyInfo(guiGraphics, keyMapping, startX, startY, true, br && displayCount > r);
-                    startY -= hd;
-                    if (startY >= height || (br && displayCount == r)) {
-                        startY = (int) height - 1;
-                        startX = (int) width - 1;
+                    renderKeyInfo(guiGraphics, keyMapping, x, y, true, br && displayCount > r);
+                    y -= hd;
+                    if (y >= height || (br && displayCount == r)) {
+                        y = startY;
+                        x = (int) width - 1;
                     }
                     modifier++;
                     displayCount++;
@@ -90,11 +91,11 @@ public class ShowKeyGui implements LayeredDraw.Layer {
                         continue;
                     }
                     boolean br = ShowKeyConfig.displayMode == 0;
-                    renderKeyInfo(guiGraphics, keyMapping, startX, startY, true, br && displayCount > r);
-                    startY -= hd;
-                    if (startY >= height || (br && displayCount == r)) {
-                        startY = (int) height - 1;
-                        startX = (int) width - 1;
+                    renderKeyInfo(guiGraphics, keyMapping, x, y, true, br && displayCount > r);
+                    y -= hd;
+                    if (y >= height || (br && displayCount == r)) {
+                        y = startY;
+                        x = (int) width - 1;
                     }
                     displayCount++;
                 } else {
