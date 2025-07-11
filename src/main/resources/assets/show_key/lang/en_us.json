@@ -49,5 +49,11 @@
   "show_key.configuration.x.tooltip": "Horizontal axis",
   "show_key.configuration.y.tooltip": "Vertical axis",
   "show_key.configuration.configurekeymapping": "Keymapping configs",
-  "show_key.configuration.addition": "configure keymapping configs"
+  "show_key.configuration.addition": "configure keymapping configs",
+  "show_key.configuration.list": "list",
+  "show_key.configuration.matchtag": "match tags",
+  "show_key.configuration.list.tooltip": "add strings",
+  "show_key.configuration.matchtag.tooltip": "match item tags?",
+  "show_key.configuration.blacklist_mode": "blacklist mode",
+  "show_key.configuration.blacklist_mode.tooltip": "use list as blacklist?"
 }

@@ -49,5 +49,11 @@
   "show_key.configuration.x.tooltip": "横轴",
   "show_key.configuration.y.tooltip": "纵轴",
   "show_key.configuration.configurekeymapping": "键盘映射显示配置",
-  "show_key.configuration.addition": "配置对应按键的图形数据"
+  "show_key.configuration.addition": "配置对应按键的图形数据",
+  "show_key.configuration.list": "清单",
+  "show_key.configuration.matchtag": "匹配标签模式",
+  "show_key.configuration.list.tooltip": "添加内容",
+  "show_key.configuration.matchtag.tooltip": "匹配标签模式?",
+  "show_key.configuration.blacklist_mode": "黑名单模式",
+  "show_key.configuration.blacklist_mode.tooltip": "将清单作为黑名单使用?"
 }

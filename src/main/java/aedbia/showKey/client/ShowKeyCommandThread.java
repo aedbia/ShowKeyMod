@@ -10,6 +10,7 @@ import net.minecraft.client.player.LocalPlayer;
 import net.minecraft.commands.CommandSourceStack;
 import net.minecraft.commands.Commands;
 import net.minecraft.network.chat.*;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.item.ItemStack;
 import net.neoforged.neoforge.client.event.RegisterClientCommandsEvent;
 import org.slf4j.Logger;
@@ -31,27 +32,32 @@ public class ShowKeyCommandThread extends Thread {
         super("ShowKeyCommandThread");
     }
 
-    public static void listHoldItem() {
+    public static void listHoldItem(InteractionHand hand) {
         if (Minecraft.getInstance().player != null) {
             LocalPlayer player = Minecraft.getInstance().player;
-            String mainItem;
-            if (player.getMainHandItem().isEmpty()) {
-                mainItem = "null";
-            } else {
-                mainItem = player.getMainHandItem().getDescriptionId();
+            String item;
+            List<String> tags = new ArrayList<>();
+            String title;
+            ItemStack stack=player.getItemInHand(hand);
+            if(hand == InteractionHand.MAIN_HAND){
+                title = "item.modifiers.offhand";
+            }else {
+                title = "item.modifiers.mainhand";
             }
-            String offItem;
-            if (player.getOffhandItem().isEmpty()) {
-                offItem = "null";
+            if (stack.isEmpty()) {
+                item = "null";
             } else {
-                offItem = player.getOffhandItem().getItem().getDescriptionId();
+                item = stack.getDescriptionId();
+                for(var t : stack.getTags().toList()){
+                    tags.add(t.toString());
+                }
             }
-            Minecraft.getInstance().gui.getChat().addMessage(getCopyComponent("item.modifiers.mainhand", mainItem).append(CommonComponents.NEW_LINE).append(getCopyComponent("item.modifiers.offhand", offItem)));
+            Minecraft.getInstance().gui.getChat().addMessage(getCopyItemWithTags(title, item,tags));
 
         }
     }
 
-    public static void listEquipItem() {
+    public static void listEquipItem(int index) {
         if (Minecraft.getInstance().player != null) {
             LocalPlayer player = Minecraft.getInstance().player;
             String[] a = new String[]{
@@ -63,16 +69,19 @@ public class ShowKeyCommandThread extends Thread {
             int b = 0;
             MutableComponent component = null;
             for (ItemStack stack : player.getArmorSlots()) {
-                String x;
-                if (stack.isEmpty()) {
-                    x = "null";
-                } else {
-                    x = stack.getDescriptionId();
-                }
-                if (component == null) {
-                    component = getCopyComponent(a[b], x);
-                } else {
-                    component.append(CommonComponents.NEW_LINE).append(getCopyComponent(a[b], x));
+                if(b == index) {
+                    String x;
+                    List<String> tags = new ArrayList<>();
+                    if (stack.isEmpty()) {
+                        x = "null";
+                    } else {
+                        x = stack.getDescriptionId();
+                        for(var t : stack.getTags().toList()){
+                            tags.add(t.toString());
+                        }
+                    }
+
+                    component = getCopyItemWithTags(a[b], x,tags);
                 }
                 b++;
                 if (b >= a.length) {
@@ -90,13 +99,15 @@ public class ShowKeyCommandThread extends Thread {
         if (Minecraft.getInstance().player != null) {
             LocalPlayer player = Minecraft.getInstance().player;
             String ride;
+            List<String> tags = new ArrayList<>();
             if (player.getVehicle() != null) {
                 ride = player.getVehicle().getType().toString();
+                tags.addAll(player.getVehicle().getTags());
             } else {
                 ride = "null";
             }
             String a = Component.translatable("commands.ride.already_riding").getString().replace("%s", "") + ":";
-            Minecraft.getInstance().gui.getChat().addMessage(getCopyComponent(a, ride));
+            Minecraft.getInstance().gui.getChat().addMessage(getCopyItemWithTags(a, ride,tags));
         }
     }
 
@@ -108,6 +119,16 @@ public class ShowKeyCommandThread extends Thread {
         } else {
             return component;
         }
+    }
+    private static  MutableComponent getCopyItemWithTags(String title,String copyString,List<String> tags){
+        var c = getCopyComponent(title,copyString);
+        if(tags!=null&& !tags.isEmpty()){
+            c.append("\nTags:");
+            for (String str:tags){
+                c.append("\n").append(getCopyComponent("",str));
+            }
+        }
+        return c;
     }
 
     public static void registerCommands(RegisterClientCommandsEvent event) {
@@ -158,8 +179,14 @@ public class ShowKeyCommandThread extends Thread {
                         }))));
         event.getDispatcher()
                 .register(commands.then(Commands.literal("item")
-                        .then(Commands.literal("hold").executes(a -> {
-                            ShowKeyCommandThread.listHoldItem();
+                        .then(Commands.literal("main_hand").executes(a -> {
+                            ShowKeyCommandThread.listHoldItem(InteractionHand.MAIN_HAND);
+                            return 1;
+                        }))));
+        event.getDispatcher()
+                .register(commands.then(Commands.literal("item")
+                        .then(Commands.literal("off_hand").executes(a -> {
+                            ShowKeyCommandThread.listHoldItem(InteractionHand.OFF_HAND);
                             return 1;
                         }))));
         event.getDispatcher()
@@ -168,12 +195,17 @@ public class ShowKeyCommandThread extends Thread {
                             ShowKeyCommandThread.listRideVehicle();
                             return 1;
                         }))));
-        event.getDispatcher()
-                .register(commands.then(Commands.literal("equip")
-                        .then(Commands.literal("list").executes(a -> {
-                            ShowKeyCommandThread.listEquipItem();
-                            return 1;
-                        }))));
+        for (int i = 0;i<4;i++){
+            int finalI = i;
+            event.getDispatcher()
+                    .register(commands.then(Commands.literal("equip")
+                            .then(Commands.literal(Integer.toString(finalI)).executes(a -> {
+                                ShowKeyCommandThread.listEquipItem(finalI);
+                                return 1;
+                            }))));
+        }
+
+
     }
 
     @Override
@@ -201,8 +233,12 @@ public class ShowKeyCommandThread extends Thread {
                     if (!Objects.equals(screenTitle, a)) {
                         this.screenTitle = a;
                         Minecraft.getInstance().gui.getChat().addMessage(getCopyComponent("Show_key.Now.Screen", a));
-                        listHoldItem();
-                        listEquipItem();
+                        listHoldItem(InteractionHand.MAIN_HAND);
+                        listHoldItem(InteractionHand.OFF_HAND);
+                        for (int i = 0;i<4;i++){
+                            listEquipItem(i);
+                        }
+
                         listRideVehicle();
                     }
                 } else {

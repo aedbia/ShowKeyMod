@@ -7,9 +7,13 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Lists;
 import net.minecraft.client.KeyMapping;
 import net.minecraft.client.Minecraft;
+import net.minecraft.client.gui.screens.Screen;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.world.InteractionHand;
+import net.minecraft.world.entity.Entity;
 import net.minecraft.world.item.Equipable;
+import net.minecraft.world.item.ItemStack;
 import net.neoforged.bus.api.SubscribeEvent;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.EventBusSubscriber;
@@ -19,16 +23,19 @@ import net.neoforged.neoforge.common.ModConfigSpec;
 import net.neoforged.neoforge.common.ModConfigSpec.BooleanValue;
 import net.neoforged.neoforge.common.ModConfigSpec.ConfigValue;
 import net.neoforged.neoforge.common.ModConfigSpec.DoubleValue;
+import net.neoforged.neoforge.common.Tags;
 
 import java.awt.*;
 import java.util.List;
 import java.util.*;
+import java.util.function.BiPredicate;
+import java.util.function.Predicate;
 
 @EventBusSubscriber(modid = ShowKey.MODID)
 public class ShowKeyConfig {
     public static final ModConfigSpec SPEC;
     private static final ModConfigSpec.Builder BUILDER = new ModConfigSpec.Builder();
-    private static final ModConfigSpec.DoubleValue UI_SCALE;
+    private static final DoubleValue UI_SCALE;
     private static final ModConfigSpec.IntValue DISPLAY_COUNT;
     private static final ModConfigSpec.EnumValue<MODE> DISPLAY_MODE;
     private static final ConfigValue<List<? extends String>> KEYMAPPING_WHITE_LIST;
@@ -141,6 +148,7 @@ public class ShowKeyConfig {
         public static final String DRAW_SIZE = ".Draw size";
         public static final String MAIN_HAND_ITEM = ".Bound main hand items";
         public static List<KeyConfig> allKeyConfig = new ArrayList<>();
+        private static ModConfigSpec.Range<Integer> range;
         private final KeyMapping mapping;
         private final BooleanValue HIDE;
         private final BooleanValue CUSPOS;
@@ -150,14 +158,9 @@ public class ShowKeyConfig {
         private final BooleanValue HIDEN;
         private final BooleanValue DRAWR;
         private final DoubleValue SIZE;
-        private final ConfigValue<List<? extends String>> MHI;
-        private final ConfigValue<List<? extends String>> OHI;
-        private final ConfigValue<List<? extends String>> EQU;
-        private final ConfigValue<List<? extends String>> VEH;
-        private final ConfigValue<List<? extends String>> SCR;
+        private final List<BaseSubConfig> subKeyConfigs = new ArrayList<>();
 
         private KeyConfig(KeyMapping keyMapping, ModConfigSpec.Builder builder) {
-
             mapping = keyMapping;
             String a = Component.literal(keyMapping.getName()).getString().replace(".", " ");
             if (KeyInfoHelper.keyNames == null) {
@@ -173,45 +176,65 @@ public class ShowKeyConfig {
             HIDEN = builder.comment("Hide bound keymapping name?\n隐藏绑定键位名称").define(a + HIDE_NAME, false);
             DRAWR = builder.comment("Draw form right to right?\n从右向左绘制").define(a + DRAW_RIGHT, false);
             SIZE = builder.comment("Draw Size\n绘制大小").defineInRange(a + DRAW_SIZE, 1.0d, 0.1d, 10d);
-            List<String> o = new ArrayList<>();
-            var range = ModConfigSpec.Range.of(0, Integer.MAX_VALUE);
-            MHI = builder.comment("If an item name is added, the key is displayed only when the item is in main hand\n添加一个物品名称后，该键位只会在主手持有该物品时显示")
-                    .defineList(split(a + MAIN_HAND_ITEM), () -> o, () -> "null", obj -> {
-                        if (obj instanceof String str) {
-                            if (str.equals("null") || str.equals("example0") || str.equals("example1")) {
-                                return true;
-                            } else {
-                                return BuiltInRegistries.ITEM.stream().anyMatch(item -> item.getDescriptionId().equals(str));
-                            }
+            range = ModConfigSpec.Range.of(0, Integer.MAX_VALUE);
+            String tooltip = "If an item name is added, the key is displayed only when the item is in main hand\n添加一个物品名称后，该键位只会在主手持有该物品时显示";
+            new SubKeyItemStringListConfig(this, builder, new ShowKeyCondition.SubCondition(sc -> matchContent(sc, InteractionHand.MAIN_HAND)), a + MAIN_HAND_ITEM, tooltip, obj -> true);
+            tooltip = "If an item name is added, the key is displayed only when the item is in off hand\n添加一个物品名称后，该键位只会在副手持有该物品时显示";
+            new SubKeyItemStringListConfig(this, builder, new ShowKeyCondition.SubCondition(sc ->matchContent(sc, InteractionHand.OFF_HAND)), a + OFF_HAND_ITEM, tooltip, obj -> true);
+            tooltip = "If an equipment name is added, the key is displayed only when wear the equipment\n添加一个装备物品名称后，该键位只会在装备该装备时显示";
+            new SubKeyItemStringListConfig(this, builder, new ShowKeyCondition.SubCondition(sc -> {
+                if (sc.list.isEmpty()) {
+                    return true;
+                } else if (Minecraft.getInstance().player != null) {
+                    List<ItemStack> stacks = new ArrayList<>();
+                    for (ItemStack stack : Minecraft.getInstance().player.getArmorSlots()) {
+                        if (!stack.isEmpty()) {
+                            stacks.add(stack);
                         }
-                        return true;
-                    }, range);
-            OHI = builder.comment("If an item name is added, the key is displayed only when the item is in off hand\n添加一个物品名称后，该键位只会在副手持有该物品时显示")
-                    .defineList(split(a + OFF_HAND_ITEM), () -> o, () -> "null", obj -> {
-                        if (obj instanceof String str) {
-                            if (str.equals("null") || str.equals("example0") || str.equals("example1")) {
-                                return true;
+                    }
+                    if (stacks.isEmpty()) {
+                        return sc.list.contains("null");
+                    } else {
+                        return stacks.stream().anyMatch(o1 -> {
+                            if (sc.matchTags) {
+                                return o1.getTags().allMatch(str -> sc.list.contains(str.toString()));
                             } else {
-                                return BuiltInRegistries.ITEM.stream().anyMatch(item -> item.getDescriptionId().equals(str));
+                                return sc.list.contains(o1.getDescriptionId());
                             }
-                        }
-                        return true;
-                    }, range);
-            EQU = builder.comment("If an equipment name is added, the key is displayed only when wear the equipment\n添加一个装备物品名称后，该键位只会在装备该装备时显示")
-                    .defineList(split(a + EQUIPMENTS), () -> o, () -> "null", obj -> {
-                        if (obj instanceof String str) {
-                            if (str.equals("null") || str.equals("example0") || str.equals("example1")) {
-                                return true;
-                            } else {
-                                return BuiltInRegistries.ITEM.stream().anyMatch(item -> item instanceof Equipable && item.getDescriptionId().equals(str));
-                            }
-                        }
-                        return true;
-                    }, range);
-            VEH = builder.comment("If a vehicle name is added, the key is displayed only when drive the vehicle\n添加一个载具名称后，该键位只会在乘坐该载具时显示")
-                    .defineList(split(a + VEHICLES), () -> o, () -> "null", obj -> true, range);
-            SCR = builder.comment("If a screen ID is added, the key is displayed only when the screen is opened\n添加一个界面ID后，该键位只会在打开该界面时显示")
-                    .defineList(split(a + SCREENS), () -> o, () -> "null", obj -> true, range);
+                        });
+                    }
+                }
+                return false;
+            }), a + EQUIPMENTS, tooltip, obj -> true);
+            tooltip = "If a vehicle name is added, the key is displayed only when drive the vehicle\n添加一个载具名称后，该键位只会在乘坐该载具时显示";
+            new SubKeyItemStringListConfig(this, builder, new ShowKeyCondition.SubCondition(sc -> {
+                if (sc.list.isEmpty()) {
+                    return true;
+                } else if (Minecraft.getInstance().player != null) {
+                    Entity vehicle = Minecraft.getInstance().player.getVehicle();
+                    if (vehicle == null) {
+                        return sc.list.contains("null");
+                    } else if(sc.matchTags) {
+                        return vehicle.getTags().stream().anyMatch(vt->sc.list.contains(vt));
+                    }else {
+                        return sc.list.contains(vehicle.getType().toString());
+                    }
+                }
+                return false;
+            }), a + VEHICLES, tooltip, obj -> true);
+            tooltip = "If a screen ID is added, the key is displayed only when the screen is opened\n添加一个界面ID后，该键位只会在打开该界面时显示";
+            new SubKeyStringListConfig(this, builder, new ShowKeyCondition.SubCondition(sc -> {
+                if (sc.list.isEmpty()) {
+                    return true;
+                } else {
+                    Screen screen = Minecraft.getInstance().screen;
+                    if (screen == null) {
+                        return sc.list.contains("null");
+                    } else {
+                        return sc.list.contains(screen.getClass().getName());
+                    }
+                }
+            }), a + SCREENS, tooltip, obj -> true);
             if (allKeyConfig == null) {
                 allKeyConfig = new ArrayList<>();
             }
@@ -219,8 +242,25 @@ public class ShowKeyConfig {
                 allKeyConfig.add(this);
             }
         }
-
-        protected static void LoadAllKeyConfigs() {
+        private static boolean matchContent(ShowKeyCondition.SubCondition sc,InteractionHand hand){
+            if (sc.list.isEmpty()) {
+                return true;
+            } else {
+                if (Minecraft.getInstance().player != null) {
+                    ItemStack stack = Minecraft.getInstance().player.getItemInHand(hand);
+                    if (stack.isEmpty()) {
+                        return sc.list.contains("null");
+                    } else if (sc.matchTags) {
+                        return stack.getTags().anyMatch(str -> sc.list.contains(str.toString()));
+                    } else {
+                        return sc.list.contains(stack.getDescriptionId());
+                    }
+                } else {
+                    return false;
+                }
+            }
+        }
+        private static void LoadAllKeyConfigs() {
             for (final var value : allKeyConfig) {
                 value.ApplyCondition();
             }
@@ -236,46 +276,67 @@ public class ShowKeyConfig {
             condition.hideName = HIDEN.get();
             condition.drawRight = DRAWR.get();
             condition.size = SIZE.get();
-            MHI.get().forEach(obj -> {
-                if (obj instanceof String str) {
-                    if (!condition.boundMainHandItem.contains(str) && !str.contains("example")) {
-                        condition.boundMainHandItem.add(str);
-                        //ShowKey.LOGGER.debug("111111111111111111111111111111111111111");
-                    }
-                }
-            });
-            OHI.get().forEach(obj -> {
-                if (obj instanceof String str) {
-                    if (!condition.boundOffHandItem.contains(str) && !str.contains("example")) {
-                        condition.boundOffHandItem.add(str);
-                    }
-                }
-            });
-            EQU.get().forEach(obj -> {
-                if (obj instanceof String str) {
-                    if (!condition.boundEquipment.contains(str) && !str.contains("example")) {
-                        condition.boundEquipment.add(str);
-                    }
-                }
-            });
-            VEH.get().forEach(obj -> {
-                if (obj instanceof String str) {
-                    if (!condition.boundVehicle.contains(str) && !str.contains("example")) {
-                        condition.boundVehicle.add(str);
-                    }
-                }
-            });
-            SCR.get().forEach(obj -> {
-                if (obj instanceof String str) {
-                    if (!condition.boundScreens.contains(str) && !str.contains("example")) {
-                        condition.boundScreens.add(str);
-                    }
-                }
-            });
+            for (var sub : subKeyConfigs) {
+                sub.ApplySubCondition(condition);
+            }
             if (KeyInfoHelper.KEY_DISPLAY_RULE.containsKey(name)) {
                 KeyInfoHelper.KEY_DISPLAY_RULE.replace(name, condition);
             } else {
                 KeyInfoHelper.KEY_DISPLAY_RULE.put(name, condition);
+            }
+        }
+
+        private static abstract class BaseSubConfig {
+            ShowKeyCondition.SubCondition subCondition;
+            ConfigValue<List<? extends String>> LIST;
+            BooleanValue BLACKLIST;
+            public BaseSubConfig(KeyConfig parent, ModConfigSpec.Builder builder, ShowKeyCondition.SubCondition subCondition, String path, String tooltips, Predicate<Object> elementValidator) {
+                this.subCondition = subCondition;
+                List<String> o = new ArrayList<>();
+                LIST = builder.comment(tooltips)
+                        .defineList(split(path+".list"), () -> o, () -> "null", elementValidator, range);
+                BLACKLIST = builder.comment("black list?\n黑名单模式？").define(path+".blacklist_mode",false);
+                parent.subKeyConfigs.add(this);
+            }
+
+            public abstract void ApplySubCondition(ShowKeyCondition condition);
+        }
+
+        private static class SubKeyItemStringListConfig extends SubKeyStringListConfig {
+            private final BooleanValue MATCH;
+
+            public SubKeyItemStringListConfig(KeyConfig parent, ModConfigSpec.Builder builder, ShowKeyCondition.SubCondition subCondition, String path, String tooltips, Predicate<Object> elementValidator) {
+                super(parent, builder, subCondition, path, tooltips, elementValidator);
+                MATCH = builder.comment("Match tags or itemId?\n匹配tags").define(path + ".matchtag", false);
+            }
+
+            @Override
+            public void ApplySubCondition(ShowKeyCondition condition) {
+                subCondition.matchTags = MATCH.get();
+                super.ApplySubCondition(condition);
+            }
+        }
+
+        private static class SubKeyStringListConfig extends BaseSubConfig {
+            public SubKeyStringListConfig(KeyConfig parent, ModConfigSpec.Builder builder, ShowKeyCondition.SubCondition subCondition, String path, String tooltips, Predicate<Object> elementValidator) {
+                super(parent, builder, subCondition, path, tooltips, elementValidator);
+            }
+
+            @Override
+            public void ApplySubCondition(ShowKeyCondition condition) {
+                subCondition.blackList = BLACKLIST.get();
+                List<String> a = new ArrayList<>();
+                LIST.get().forEach(obj -> {
+                    if (obj instanceof String str) {
+                        if (!str.contains("example")) {
+                            a.add(str);
+                        }
+                    }
+                });
+                subCondition.list = a;
+                if (!condition.subConditions.contains(subCondition)) {
+                    condition.subConditions.add(subCondition);
+                }
             }
         }
     }
